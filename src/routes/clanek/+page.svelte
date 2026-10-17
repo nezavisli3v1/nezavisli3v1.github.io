@@ -2,7 +2,7 @@
   import { page } from '$app/state';
   import { api } from '$lib/api.js';
   import { session, isAuthor, isAdmin, toast } from '$lib/state.svelte.js';
-  import { date, clean } from '$lib/util.js';
+  import { date, clean, fileSize } from '$lib/util.js';
   import Poll from '$lib/components/Poll.svelte';
   import Comments from '$lib/components/Comments.svelte';
 
@@ -38,6 +38,18 @@
     {#if cover}<img src={cover} alt="">{/if}
     {#if post.perex}<p class="perex">{post.perex}</p>{/if}
     <div class="body">{@html clean(post.body_html)}</div>
+    {#if post.attachments?.length}
+      <section class="atts" aria-label="Přílohy">
+        <h2>Přílohy</h2>
+        {#each post.attachments as a (a.id)}
+          <a class="att" href={api.attachmentUrl(a.path)} target="_blank" rel="noopener">
+            <span class="pdf" aria-hidden="true">PDF</span>
+            <span class="nm">{a.name}</span>
+            <span class="meta">{fileSize(a.size_bytes)}</span>
+          </a>
+        {/each}
+      </section>
+    {/if}
     {#if post.poll}<Poll poll={post.poll} closed={!!post.closed_at} />{/if}
   </article>
 
@@ -71,6 +83,12 @@
   .body :global(h3) { font-size: 19px; margin: 20px 0 8px; }
   .body :global(blockquote) { border-left: 3px solid var(--accent); margin: 12px 0; padding-left: 14px; color: var(--muted); }
   .tools { margin-top: 18px; }
+  .atts { margin: 18px 0; display: flex; flex-direction: column; gap: 8px; }
+  .atts h2 { font-size: 16px; }
+  .att { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: inherit; text-decoration: none; }
+  .att:hover { border-color: var(--link); }
+  .nm { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .pdf { font-size: 10.5px; font-weight: 700; color: var(--bad); border: 1.5px solid var(--bad); border-radius: 4px; padding: 2px 4px; }
   .closeform { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
   @media (max-width: 520px) { h1 { font-size: 24px; } }
 </style>

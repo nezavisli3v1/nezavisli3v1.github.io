@@ -65,8 +65,11 @@ export function createSupabaseApi(url, key) {
       const p = await one(sb.from('posts').select('*').eq('id', id).maybeSingle());
       if (!p) return null;
       const author = (await people([p.author_id]))[p.author_id];
-      const poll = await one(sb.from('polls').select('id,question,poll_options(id,label,position)').eq('post_id', id).maybeSingle());
-      return { ...p, author, poll: poll && { id: poll.id, question: poll.question, options: poll.poll_options.sort((a, b) => a.position - b.position) } };
+      const [poll, attachments] = await Promise.all([
+        one(sb.from('polls').select('id,question,poll_options(id,label,position)').eq('post_id', id).maybeSingle()),
+        one(sb.from('attachments').select('id,path,name,size_bytes,position').eq('post_id', id).order('position'))
+      ]);
+      return { ...p, author, attachments, poll: poll && { id: poll.id, question: poll.question, options: poll.poll_options.sort((a, b) => a.position - b.position) } };
     },
 
     async pollResults(pollId) {
@@ -89,6 +92,20 @@ export function createSupabaseApi(url, key) {
         const { data: u } = await sb.auth.getUser();
         id = (await one(sb.from('posts').insert({ ...row, author_id: u.user.id }).select('id').single())).id;
       }
+      if (d.attachments) {
+        const existing = await one(sb.from('attachments').select('id,path').eq('post_id', id));
+        const keep = new Set(d.attachments.filter((a) => a.id).map((a) => a.id));
+        const gone = existing.filter((a) => !keep.has(a.id));
+        if (gone.length) {
+          fail((await sb.from('attachments').delete().in('id', gone.map((a) => a.id))).error);
+          await sb.storage.from('attachments').remove(gone.map((a) => a.path));
+        }
+        for (const [i, a] of d.attachments.entries()) {
+          const row = { name: a.name.trim() || 'Příloha', position: i };
+          if (a.id) fail((await sb.from('attachments').update(row).eq('id', a.id)).error);
+          else fail((await sb.from('attachments').insert({ ...row, post_id: id, path: a.path, size_bytes: a.size_bytes })).error);
+        }
+      }
       // anketu lze měnit jen do zveřejnění, aby se nepřepsaly hlasy
       if (d.pollEditable) {
         fail((await sb.from('polls').delete().eq('post_id', id)).error);
@@ -109,6 +126,12 @@ export function createSupabaseApi(url, key) {
       fail((await sb.storage.from('covers').upload(path, file, { cacheControl: '31536000', contentType: file.type })).error);
       return path;
     },
+    async uploadAttachment(file) {
+      const path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.pdf`;
+      fail((await sb.storage.from('attachments').upload(path, file, { cacheControl: '31536000', contentType: 'application/pdf' })).error);
+      return { path, name: file.name.replace(/\.pdf$/i, ''), size_bytes: file.size };
+    },
+    attachmentUrl(path) { return sb.storage.from('attachments').getPublicUrl(path).data.publicUrl; },
     coverUrl(path) { return path ? sb.storage.from('covers').getPublicUrl(path).data.publicUrl : null; },
 
     // ── komentáře

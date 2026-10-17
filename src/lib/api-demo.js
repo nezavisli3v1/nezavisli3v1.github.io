@@ -51,7 +51,8 @@ export function createDemoApi() {
     { id: 31, post_id: 3, parent_id: null, author_id: 'petra', body: 'U rybníka v Litvínovicích, cestou na procházku.', created_at: daysAgo(10) }
   ];
   const chapters = structuredClone(DEMO_CHAPTERS);
-  const covers = {};
+  const covers = {}; const files = {};
+  const attachments = [{ id: 1, post_id: 1, path: 'demo-zapis', name: 'Ukázka: zápis ze zasedání zastupitelstva', size_bytes: 482000, position: 0 }];
 
   // přepínač „kdo jsem“ jen pro ukázku
   let current = null; const listeners = [];
@@ -81,7 +82,7 @@ export function createDemoApi() {
       const p = posts.find((x) => x.id === +id && (x.status === 'published' || isAuthor()));
       if (!p) return wait(null);
       const poll = polls.find((x) => x.post_id === p.id);
-      return wait({ ...p, author: pub(p.author_id), poll: poll && { id: poll.id, question: poll.question, options: poll.options } });
+      return wait({ ...p, author: pub(p.author_id), attachments: attachments.filter((a) => a.post_id === p.id).sort((a, b) => a.position - b.position), poll: poll && { id: poll.id, question: poll.question, options: poll.options } });
     },
     async pollResults(pollId) {
       const poll = polls.find((x) => x.id === pollId);
@@ -101,6 +102,10 @@ export function createDemoApi() {
       Object.assign(p, { kind: d.kind, title: d.title.trim(), perex: d.perex.trim(), body_html: d.body_html, category: d.category,
         cover_path: d.cover_path || null, status: d.status, comments_enabled: d.comments_enabled, updated_at: now() });
       if (p.status === 'published' && !p.published_at) p.published_at = now();
+      if (d.attachments) {
+        for (let i = attachments.length - 1; i >= 0; i--) if (attachments[i].post_id === p.id) attachments.splice(i, 1);
+        d.attachments.forEach((a, i) => attachments.push({ id: a.id || ++seq, post_id: p.id, path: a.path, name: a.name.trim() || 'Příloha', size_bytes: a.size_bytes, position: i }));
+      }
       if (d.pollEditable) {
         const i = polls.findIndex((x) => x.post_id === p.id); if (i >= 0) polls.splice(i, 1);
         const opts = (d.poll?.options || []).map((o) => o.trim()).filter(Boolean);
@@ -117,6 +122,11 @@ export function createDemoApi() {
       const url = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(file); });
       const key = `demo-${++seq}`; covers[key] = url; return key;
     },
+    async uploadAttachment(file) {
+      const key = `demo-${++seq}`; files[key] = URL.createObjectURL(file);
+      return { path: key, name: file.name.replace(/\.pdf$/i, ''), size_bytes: file.size };
+    },
+    attachmentUrl(path) { return files[path] || '#'; },
     coverUrl(path) { return path ? covers[path] || null : null; },
 
     async listComments(postId) {

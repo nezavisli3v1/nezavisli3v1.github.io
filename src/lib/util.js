@@ -30,3 +30,9 @@ if (typeof window !== 'undefined') {
 }
 
 export const textLength = (html) => (html || '').replace(/<[^>]+>/g, '').trim().length;
+
+export function fileSize(b) {
+  if (b < 1024 * 1024) return `${Math.max(1, Math.round(b / 1024))} kB`;
+  return `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
+}
+export const MAX_ATTACHMENT = 10 * 1024 * 1024;

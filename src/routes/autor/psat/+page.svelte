@@ -3,11 +3,11 @@
   import { goto } from '$app/navigation';
   import { api } from '$lib/api.js';
   import { session, isAuthor, isAdmin, toast } from '$lib/state.svelte.js';
-  import { CATEGORIES, textLength } from '$lib/util.js';
+  import { CATEGORIES, textLength, fileSize, MAX_ATTACHMENT } from '$lib/util.js';
   import Editor from '$lib/components/Editor.svelte';
 
   const editId = $derived(+page.url.searchParams.get('id') || null);
-  let d = $state(null), loaded = $state(false), busy = $state(false), uploading = $state(false), confirmDel = $state(false);
+  let d = $state(null), loaded = $state(false), busy = $state(false), uploading = $state(false), uploadingPdf = $state(false), confirmDel = $state(false);
   let hadPoll = false;
 
   $effect(() => {
@@ -15,14 +15,14 @@
     loaded = true;
     if (!editId) {
       d = { kind: page.url.searchParams.get('druh') === 'question' ? 'question' : 'article', title: '', perex: '', body_html: '',
-        category: CATEGORIES[0], cover_path: null, comments_enabled: true, status: 'draft', addPoll: false,
+        category: CATEGORIES[0], cover_path: null, comments_enabled: true, status: 'draft', addPoll: false, attachments: [],
         poll: { question: '', options: ['', ''] } };
       return;
     }
     api.getPost(editId).then((p) => {
       if (!p) { d = false; return; }
       hadPoll = !!p.poll;
-      d = { ...p, addPoll: !!p.poll, poll: p.poll ? { question: p.poll.question, options: p.poll.options.map((o) => o.label) } : { question: '', options: ['', ''] } };
+      d = { ...p, attachments: p.attachments || [], addPoll: !!p.poll, poll: p.poll ? { question: p.poll.question, options: p.poll.options.map((o) => o.label) } : { question: '', options: ['', ''] } };
     });
   });
 
@@ -51,6 +51,18 @@
     try { d.cover_path = await api.uploadCover(await shrink(f)); } catch (err) { toast('Fotku se nepodařilo nahrát: ' + err.message); }
     finally { uploading = false; e.target.value = ''; }
   }
+
+  async function pickPdf(e) {
+    const list = [...e.target.files]; e.target.value = '';
+    for (const f of list) {
+      if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) { toast(`„${f.name}“ není PDF.`); continue; }
+      if (f.size > MAX_ATTACHMENT) { toast(`„${f.name}“ má víc než 10 MB. Zkuste ho zmenšit, třeba přes „Uložit jako PDF“ s nižší kvalitou.`); continue; }
+      uploadingPdf = true;
+      try { d.attachments.push(await api.uploadAttachment(f)); } catch (err) { toast('PDF se nepodařilo nahrát: ' + err.message); }
+      finally { uploadingPdf = false; }
+    }
+  }
+  function moveAtt(i, dir) { const a = d.attachments; [a[i], a[i + dir]] = [a[i + dir], a[i]]; }
 
   async function save(status) {
     busy = true;
@@ -117,7 +129,30 @@
     </div>
 
     <div class="step">
-      <span class="l"><i>{editId ? 3 : 4}</i>Diskuse a anketa</span>
+      <span class="l"><i>{editId ? 3 : 4}</i>Přílohy (nepovinné)</span>
+      <p class="hint">PDF do 10 MB, třeba zápis, usnesení nebo rozpočet. Název přílohy můžete přepsat, aby bylo jasné, co v ní je.</p>
+      {#if d.attachments.length}
+        <ul class="atts">
+          {#each d.attachments as a, i (a.path)}
+            <li>
+              <span class="pdf" aria-hidden="true">PDF</span>
+              <input class="field" bind:value={a.name} maxlength="160" aria-label={`Název přílohy ${i + 1}`}>
+              <span class="meta">{fileSize(a.size_bytes)}</span>
+              <span class="ord">
+                <button type="button" class="linkbtn" disabled={i === 0} onclick={() => moveAtt(i, -1)} aria-label="Posunout výš">↑</button>
+                <button type="button" class="linkbtn" disabled={i === d.attachments.length - 1} onclick={() => moveAtt(i, 1)} aria-label="Posunout níž">↓</button>
+                <button type="button" class="linkbtn rm" onclick={() => d.attachments.splice(i, 1)} aria-label={`Odebrat ${a.name}`}>✕</button>
+              </span>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+      <label class="btn ghost addpdf">{uploadingPdf ? 'Nahrávám…' : '+ Přidat PDF'}<input type="file" accept="application/pdf,.pdf" multiple onchange={pickPdf} hidden disabled={uploadingPdf}></label>
+      <p class="hint warn">Před nahráním zkontrolujte, že dokument neobsahuje jména, adresy, rodná čísla ani jiné osobní údaje soukromých lidí. Pokud ano, začerněte je.</p>
+    </div>
+
+    <div class="step">
+      <span class="l"><i>{editId ? 4 : 5}</i>Diskuse a anketa</span>
       <label class="check"><input type="checkbox" bind:checked={d.comments_enabled}><span>Povolit komentáře<small>Doporučujeme vždy. Moderovat můžete i potom.</small></span></label>
       {#if pollEditable || !hadPoll}
         <label class="check"><input type="checkbox" bind:checked={d.addPoll}><span>Přidat anketu<small>Po zveřejnění už ji nejde měnit, aby se nepřepsaly hlasy.</small></span></label>
@@ -170,5 +205,15 @@
   .pollopts { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; align-items: stretch; }
   .pollopts > .btn { align-self: flex-start; }
   .publish { position: sticky; bottom: 0; z-index: 4; background: var(--surface); border-top: 1px solid var(--line); margin: 16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
+  .atts { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .atts li { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px; align-items: center; }
+  .atts .field { min-width: 0; padding: 7px 10px; }
+  .pdf { font-size: 10.5px; font-weight: 700; color: var(--bad); border: 1.5px solid var(--bad); border-radius: 4px; padding: 2px 4px; }
+  .ord { display: flex; gap: 10px; }
+  .ord .rm { color: var(--bad); }
+  .ord button:disabled { opacity: .3; }
+  .addpdf { align-self: flex-start; }
+  .hint.warn { color: var(--warn); margin-top: 10px; }
+  @media (max-width: 520px) { .atts li { grid-template-columns: auto 1fr auto; } .atts .meta { display: none; } }
   .missing { font-size: 13px; color: var(--warn); margin-right: auto; }
 </style>
