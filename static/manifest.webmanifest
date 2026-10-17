@@ -1,0 +1,10 @@
+{
+  "name": "Nezávislí PRO",
+  "short_name": "Nezávislí 3v1",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F6FA",
+  "theme_color": "#16233F",
+  "lang": "cs",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
