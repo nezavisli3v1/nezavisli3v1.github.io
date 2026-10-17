@@ -55,7 +55,7 @@ Počítejte zhruba s hodinou. Pořadí je důležité.
 1. Na webu se přihlaste svým e-mailem a vyplňte jméno.
 2. V Supabase v **SQL Editoru** spusťte (s vaším e-mailem):
    ```sql
-   update public.profiles set role = 'admin', badge = 'zastupitel'
+   update public.profiles set role = 'admin'
    where id = (select id from auth.users where email = 'vas@email.cz');
    ```
 3. Obnovte web. Objeví se záložky **Psaní** a **Lidé**. Další autory už přidáváte v záložce Lidé.

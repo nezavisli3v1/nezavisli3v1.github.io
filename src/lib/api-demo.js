@@ -9,7 +9,7 @@ const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
 export function createDemoApi() {
   let seq = 1000;
   const people = {
-    jan: { id: 'jan', display_name: 'Jan Dolejší', role: 'admin', badge: 'zastupitel', email: 'jan@example.cz' },
+    jan: { id: 'jan', display_name: 'Jan Dolejší', role: 'admin', badge: null, email: 'jan@example.cz' },
     martin: { id: 'martin', display_name: 'Martin Maleček', role: 'author', badge: null, email: 'martin@example.cz' },
     marie: { id: 'marie', display_name: 'Marie Šímová', role: 'author', badge: null, email: 'marie@example.cz' },
     petra: { id: 'petra', display_name: 'Petra K.', role: 'reader', badge: null, email: 'petra@example.cz' },
