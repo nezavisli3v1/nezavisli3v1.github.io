@@ -276,10 +276,11 @@ create or replace function public.set_promise_status(p_promise int, p_status sma
 language plpgsql security definer set search_path = public as $$
 begin
   if not public.is_author() then raise exception 'Jen autoři mohou měnit stav slibu.'; end if;
-  if char_length(trim(coalesce(p_note,''))) < 5 then raise exception 'Napište, co se stalo. Bez vysvětlení se stav nemění.'; end if;
+  if p_status <> 0 and char_length(trim(coalesce(p_note,''))) < 5 then raise exception 'Napište, co se stalo. Bez vysvětlení se stav nemění.'; end if;
   update public.promises set status = p_status, updated_at = now() where id = p_promise;
   if not found then raise exception 'Slib neexistuje.'; end if;
-  insert into public.promise_log (promise_id, status, note, author_id) values (p_promise, p_status, trim(p_note), auth.uid());
+  insert into public.promise_log (promise_id, status, note, author_id)
+  values (p_promise, p_status, coalesce(nullif(trim(coalesce(p_note,'')), ''), 'Stav vrácen na „nezahájeno“.'), auth.uid());
 end $$;
 
 -- ─────────────────────────────────────────── přístupová práva ──

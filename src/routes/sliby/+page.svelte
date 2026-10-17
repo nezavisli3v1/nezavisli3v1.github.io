@@ -48,7 +48,7 @@
                   <select class="field" style="width:auto" bind:value={newStatus} aria-label="Nový stav">
                     {#each STATUS as s, i}<option value={i}>{s}</option>{/each}
                   </select>
-                  <input class="field" style="flex:1;min-width:180px" bind:value={note} placeholder="Co se stalo? (povinné)" required minlength="5" aria-label="Poznámka ke změně">
+                  <input class="field" style="flex:1;min-width:180px" bind:value={note} placeholder={+newStatus === 0 ? 'Poznámka (nepovinná)' : 'Co se stalo? (povinné)'} required={+newStatus !== 0} minlength={+newStatus === 0 ? undefined : 5} aria-label="Poznámka ke změně">
                   <button class="btn" disabled={busy}>Uložit</button>
                 </form>
               {/if}

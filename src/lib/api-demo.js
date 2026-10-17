@@ -137,9 +137,9 @@ export function createDemoApi() {
 
     async listPromises() { return wait(chapters.map((c) => ({ ...c, promises: c.promises.map((p) => ({ ...p, log: p.log.map((l) => ({ ...l, author: pub(l.author_id) })) })) }))); },
     async setPromiseStatus(id, status, note) {
-      need(isAuthor(), 'Jen autoři mohou měnit stav slibu.'); need(note.trim().length >= 5, 'Napište, co se stalo. Bez vysvětlení se stav nemění.');
+      need(isAuthor(), 'Jen autoři mohou měnit stav slibu.'); need(status === 0 || note.trim().length >= 5, 'Napište, co se stalo. Bez vysvětlení se stav nemění.');
       const p = chapters.flatMap((c) => c.promises).find((x) => x.id === id);
-      p.status = status; p.log.unshift({ id: ++seq, status, note: note.trim(), author_id: current, created_at: now() });
+      p.status = status; p.log.unshift({ id: ++seq, status, note: note.trim() || 'Stav vrácen na „nezahájeno“.', author_id: current, created_at: now() });
     },
 
     async listProfiles() { need(me()?.role === 'admin', 'Jen pro správce.'); return wait(Object.values(people)); },

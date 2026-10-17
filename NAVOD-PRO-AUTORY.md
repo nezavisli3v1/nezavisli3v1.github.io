@@ -22,7 +22,7 @@ Tlačítko Zveřejnit je šedé, dokud něco chybí. Co chybí, je napsané vedl
 Když diskuse doběhne, otevřete příspěvek a klepněte na **Uzavřít diskusi**. Napište, co z ní vzešlo a co s tím uděláte. Shrnutí se zobrazí nad komentáři.
 
 ## Hlídač slibů
-Klepněte na bod programu, vyberte nový stav a **napište, co se stalo**. Bez poznámky se stav nezmění. Každá změna zůstává v historii bodu.
+Klepněte na bod programu, vyberte nový stav a **napište, co se stalo**. Bez poznámky se stav nezmění. Výjimkou je návrat na „Nezahájeno“, tam je poznámka nepovinná. Každá změna zůstává v historii bodu.
 
 ## Sdílení
 U každého příspěvku je **Zkopírovat odkaz**. Vložte ho na Facebook nebo do zprávy, lidé se proklikají rovnou do diskuse.

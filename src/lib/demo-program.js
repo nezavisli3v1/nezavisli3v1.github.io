@@ -1,4 +1,4 @@
-// Vygenerováno z supabase/migrations/002_program.sql, stavy jsou jen ukázkové.
+// Vygenerováno z supabase/migrations/002_program.sql.
 export const DEMO_CHAPTERS = [
  {
   "id": 1,
@@ -10,16 +10,8 @@ export const DEMO_CHAPTERS = [
     "chapter_id": 1,
     "position": 1,
     "text": "Sčítání dopravy a měření hluku a prašnosti na průtazích",
-    "status": 1,
-    "log": [
-     {
-      "id": 1,
-      "status": 1,
-      "note": "Ukázka: sbíráme od lidí místa pro první měření (diskuse v aplikaci).",
-      "author_id": "jan",
-      "created_at": "2026-10-14T21:07:36.932Z"
-     }
-    ]
+    "status": 0,
+    "log": []
    },
    {
     "id": 2,
@@ -136,16 +128,8 @@ export const DEMO_CHAPTERS = [
     "chapter_id": 3,
     "position": 4,
     "text": "Ankety u témat, která se dotýkají všech, s vždy zveřejněným výsledkem",
-    "status": 2,
-    "log": [
-     {
-      "id": 2,
-      "status": 2,
-      "note": "Ukázka: první anketa běží v této aplikaci.",
-      "author_id": "jan",
-      "created_at": "2026-10-14T21:07:36.932Z"
-     }
-    ]
+    "status": 0,
+    "log": []
    },
    {
     "id": 15,
@@ -199,16 +183,8 @@ export const DEMO_CHAPTERS = [
     "chapter_id": 4,
     "position": 5,
     "text": "Senioři: senior taxi, obědy včetně rozvozu, bezbariérové trasy, klub seniorů",
-    "status": 3,
-    "log": [
-     {
-      "id": 3,
-      "status": 3,
-      "note": "Ukázka stavu „Nepodařilo se“ i s vysvětlením, proč.",
-      "author_id": "martin",
-      "created_at": "2026-10-16T21:07:36.932Z"
-     }
-    ]
+    "status": 0,
+    "log": []
    }
   ]
  },
