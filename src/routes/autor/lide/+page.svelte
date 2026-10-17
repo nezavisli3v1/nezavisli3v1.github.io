@@ -32,7 +32,7 @@
           <select class="field" value={p.role} onchange={(e) => set(p, { role: e.target.value })} aria-label={`Role ${p.display_name}`}>
             <option value="reader">čtenář</option><option value="author">autor</option><option value="admin">správce</option>
           </select>
-          <input class="field badgein" value={p.badge || ''} placeholder="štítek, např. zastupitel" aria-label="Štítek u jména" maxlength="30"
+          <input class="field badgein" value={p.badge || ''} placeholder="štítek" aria-label="Štítek u jména" maxlength="30"
             onchange={(e) => set(p, { badge: e.target.value.trim() || null })}>
         </div>
       </div>
