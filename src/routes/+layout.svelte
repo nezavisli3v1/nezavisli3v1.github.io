@@ -64,7 +64,7 @@
 
 <style>
   .top { background: var(--head); color: #fff; }
-  .top .wrap { padding-block: 14px 12px; display: flex; align-items: center; gap: 12px; }
+  .top .wrap { padding-block: calc(14px + env(safe-area-inset-top, 0px)) 12px; display: flex; align-items: center; gap: 12px; }
   .brand { display: flex; flex-direction: column; gap: 2px; margin-right: auto; color: #fff; text-decoration: none; }
   .brand b { font-family: var(--f-display); font-weight: 800; letter-spacing: .04em; font-size: 18px; }
   .brand b span { font-weight: 700; opacity: .85; }
