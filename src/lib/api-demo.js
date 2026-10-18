@@ -166,6 +166,27 @@ export function createDemoApi() {
       p.status = status; p.log.unshift({ id: ++seq, status, note: note.trim() || 'Stav vrácen na „nezahájeno“.', author_id: current, created_at: now() });
     },
 
+    async trackView() {},
+    async statsDaily(days) {
+      need(me()?.role === 'admin', 'Jen pro správce.');
+      return wait(Array.from({ length: days }, (_, i) => {
+        const d = new Date(Date.now() - (days - 1 - i) * 864e5);
+        const base = 40 + 25 * Math.sin(i / 3) + (d.getDay() === 0 || d.getDay() === 6 ? -15 : 10);
+        return { day: d.toISOString().slice(0, 10), views: Math.max(3, Math.round(base + (i * 37 % 23))) };
+      }));
+    },
+    async statsPages() {
+      need(me()?.role === 'admin', 'Jen pro správce.');
+      return wait([
+        { path: '/', post_id: null, title: null, views: 512 },
+        { path: '/clanek/2', post_id: 2, title: posts.find((p) => p.id === 2)?.title, views: 233 },
+        { path: '/sliby/', post_id: null, title: null, views: 187 },
+        { path: '/clanek/1', post_id: 1, title: posts.find((p) => p.id === 1)?.title, views: 141 },
+        { path: '/diskuse/', post_id: null, title: null, views: 96 },
+        { path: '/clanek/3', post_id: 3, title: posts.find((p) => p.id === 3)?.title, views: 58 },
+        { path: '/pravidla/', post_id: null, title: null, views: 12 }
+      ]);
+    },
     async listProfiles() { need(me()?.role === 'admin', 'Jen pro správce.'); return wait(Object.values(people)); },
     async updateProfile(id, patch) { need(me()?.role === 'admin', 'Jen pro správce.'); Object.assign(people[id], patch); }
   };

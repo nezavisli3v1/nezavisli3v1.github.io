@@ -19,6 +19,7 @@
     <li><b>Kde to je:</b> v databázi Supabase na serverech v EU (Frankfurt).</li>
     <li><b>Jak to smazat:</b> v sekci Můj účet tlačítkem Smazat účet. Smaže se účet, komentáře i hlasy.</li>
     <li><b>Cookies:</b> používáme jen to nutné pro přihlášení. Žádné sledování ani reklamu.</li>
+    <li><b>Počítadlo:</b> počítáme, kolikrát byla která stránka otevřena. Neukládáme přitom nic o vás ani o vašem zařízení.</li>
   </ul>
 </div>
 <style>

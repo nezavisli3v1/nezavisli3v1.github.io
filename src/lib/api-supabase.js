@@ -183,6 +183,13 @@ export function createSupabaseApi(url, key) {
       fail((await sb.rpc('set_promise_status', { p_promise: id, p_status: status, p_note: note })).error);
     },
 
+    // ── počítadlo (zápis smí každý, čtení jen správce)
+    async trackView(path, postId = null) {
+      try { await sb.rpc('track_view', { p_path: path, p_post: postId }); } catch { /* statistika nesmí rozbít web */ }
+    },
+    async statsDaily(days) { return one(sb.rpc('stats_daily', { p_days: days })); },
+    async statsPages(days) { return one(sb.rpc('stats_pages', { p_days: days })); },
+
     // ── správa lidí (jen správce)
     async listProfiles() { return one(sb.rpc('admin_people')); },
     async updateProfile(id, patch) { fail((await sb.from('profiles').update(patch).eq('id', id)).error); }

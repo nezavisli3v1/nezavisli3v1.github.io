@@ -14,12 +14,25 @@
   startSession();
 
   let demoUser = $state(null);
+
+  // počítadlo: jedno zobrazení na otevřenou stránku; tým se nepočítá, administrace taky ne
+  let lastTracked = '';
+  $effect(() => {
+    const url = page.url;
+    if (!session.ready || isAuthor()) return;
+    const key = url.pathname + url.search;
+    if (key === lastTracked || url.pathname.startsWith('/autor') || url.pathname.startsWith('/ucet')) return;
+    lastTracked = key;
+    const id = url.pathname === '/clanek/' ? +url.searchParams.get('id') || null : null;
+    api.trackView(url.pathname, id);
+  });
   const path = $derived(page.url.pathname);
   const tabs = $derived([
     { href: '/', label: 'Aktuality', on: path === '/' || path.startsWith('/clanek') },
     { href: '/diskuse/', label: 'Diskuse', on: path.startsWith('/diskuse') },
     { href: '/sliby/', label: 'Hlídač slibů', on: path.startsWith('/sliby') },
-    ...(isAuthor() ? [{ href: '/autor/', label: 'Psaní', on: path.startsWith('/autor') && !path.startsWith('/autor/lide') }] : []),
+    ...(isAuthor() ? [{ href: '/autor/', label: 'Psaní', on: path.startsWith('/autor') && !path.startsWith('/autor/lide') && !path.startsWith('/autor/statistiky') }] : []),
+    ...(isAdmin() ? [{ href: '/autor/statistiky/', label: 'Statistiky', on: path.startsWith('/autor/statistiky') }] : []),
     ...(isAdmin() ? [{ href: '/autor/lide/', label: 'Lidé', on: path.startsWith('/autor/lide') }] : [])
   ]);
 </script>

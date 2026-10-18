@@ -11,6 +11,12 @@
   const load = () => api.getPost(id).then((p) => (post = p));
   $effect(() => { session.profile; id; load(); });
   const cover = $derived(post && api.coverUrl(post.cover_path));
+  let views = $state(null);
+  $effect(() => {
+    views = null;
+    if (!isAdmin() || !id) return;
+    api.statsPages(3650).then((rows) => (views = rows.find((r) => r.post_id === id)?.views ?? 0)).catch(() => {});
+  });
 
   async function close(e) {
     e.preventDefault();
@@ -35,6 +41,7 @@
     <div class="meta">{post.author?.display_name}
       {#if post.author?.badge}<span class="badge">{post.author.badge}</span>{/if}
       · {post.status === 'draft' ? 'koncept, vidí jen autoři' : isScheduled(post) ? `naplánováno na ${when(post.published_at)}, zatím vidí jen autoři` : date(post.published_at)}</div>
+    {#if views !== null}<div class="views">Zobrazeno {new Intl.NumberFormat('cs-CZ').format(views)}× celkem · vidíte jen vy</div>{/if}
     {#if cover}<img src={cover} alt="">{/if}
     {#if post.perex}<p class="perex">{post.perex}</p>{/if}
     <div class="body">{@html clean(post.body_html)}</div>
@@ -83,6 +90,7 @@
   .body :global(h3) { font-size: 19px; margin: 20px 0 8px; }
   .body :global(blockquote) { border-left: 3px solid var(--accent); margin: 12px 0; padding-left: 14px; color: var(--muted); }
   .tools { margin-top: 18px; }
+  .views { margin-top: 6px; font-size: 12.5px; color: var(--link); font-weight: 600; }
   .atts { margin: 18px 0; display: flex; flex-direction: column; gap: 8px; }
   .atts h2 { font-size: 16px; }
   .att { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: inherit; text-decoration: none; }
