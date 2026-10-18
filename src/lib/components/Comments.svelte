@@ -1,11 +1,12 @@
 <script>
   import { api } from '$lib/api.js';
-  import { session, isAuthor, toast, refreshProfile } from '$lib/state.svelte.js';
+  import { session, isAuthor, isAdmin, toast, refreshProfile } from '$lib/state.svelte.js';
   import { date, HIDE_REASONS } from '$lib/util.js';
   let { post } = $props();
 
   let list = $state([]), text = $state(''), name = $state(''), busy = $state(false);
-  let replyTo = $state(null), replyText = $state(''), modFor = $state(null);
+  let replyTo = $state(null), replyText = $state(''), modFor = $state(null), delFor = $state(null);
+  const canDelete = (c) => session.user && (c.author_id === session.user.id || isAdmin());
 
   const load = () => api.listComments(post.id).then((c) => (list = c));
   $effect(() => { session.profile; load(); });
@@ -26,6 +27,9 @@
   }
   async function submit(e) { e.preventDefault(); if (text.trim() && await send(text)) text = ''; }
   async function submitReply(e) { e.preventDefault(); if (replyText.trim() && await send(replyText, replyTo)) { replyTo = null; replyText = ''; } }
+  async function del(c) {
+    try { await api.deleteComment(c.id); delFor = null; await load(); toast('Komentář smazán.'); } catch (e) { toast(e.message); }
+  }
   async function hide(id, why) { try { await api.hideComment(id, why); modFor = null; await load(); toast(`Komentář je skrytý. Důvod „${why}“ vidí všichni.`); } catch (e) { toast(e.message); } }
   async function unhide(id) { try { await api.unhideComment(id); await load(); } catch (e) { toast(e.message); } }
 </script>
@@ -38,17 +42,23 @@
     {#if c.hidden_reason}
       <div class="hidden">Komentář skryl moderátor. Důvod: {c.hidden_reason}.
         {#if isAuthor()}<br><span class="orig">Původní text (vidí jen autoři): {c.body}</span> <button class="linkbtn" onclick={() => unhide(c.id)}>Obnovit</button>{/if}
+        {#if isAdmin()} · <button class="linkbtn danger" onclick={() => (delFor = delFor === c.id ? null : c.id)}>Smazat</button>{/if}
       </div>
     {:else}
       <p>{c.body}</p>
       <div class="acts">
         {#if open && depth === 0}<button onclick={() => { replyTo = replyTo === c.id ? null : c.id; replyText = ''; }}>Odpovědět</button>{/if}
         {#if isAuthor() && !c.author_is_team}<button class="mod" onclick={() => (modFor = modFor === c.id ? null : c.id)}>Skrýt</button>{/if}
+        {#if canDelete(c)}<button class="mod" onclick={() => (delFor = delFor === c.id ? null : c.id)}>Smazat</button>{/if}
       </div>
       {#if modFor === c.id}
         <div class="modbox"><b>Proč komentář skrýváte? Důvod uvidí všichni.</b>
           <div class="row">{#each HIDE_REASONS as r}<button onclick={() => hide(c.id, r)}>{r}</button>{/each}</div></div>
       {/if}
+    {/if}
+    {#if delFor === c.id}
+      <div class="modbox"><b>Smazat komentář natrvalo?{depth === 0 && repliesOf(c.id).length ? ` Smažou se i odpovědi (${repliesOf(c.id).length}).` : ''}</b>
+        <div class="row"><button onclick={() => del(c)}>Ano, smazat</button><button class="keep" onclick={() => (delFor = null)}>Ne</button></div></div>
     {/if}
     {#if replyTo === c.id}
       {#if session.user}
@@ -101,6 +111,8 @@
   .acts { display: flex; gap: 16px; font-size: 13px; }
   .acts button { border: 0; background: none; padding: 0; color: var(--muted); font-weight: 600; }
   .acts .mod { color: var(--bad); }
+  .danger { color: var(--bad); }
+  .modbox .keep { border-color: var(--line); color: var(--fg); }
   .replies { margin-left: 18px; border-left: 2px solid var(--line); padding-left: 14px; }
   .replies .c:first-child { border-top: 0; }
   .official { background: var(--greensoft); margin: 0 -10px; padding: 12px 10px; border-radius: 8px; border-top-color: transparent; }

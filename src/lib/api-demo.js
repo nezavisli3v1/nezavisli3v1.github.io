@@ -145,6 +145,11 @@ export function createDemoApi() {
       const parent = comments.find((c) => c.id === parentId);
       comments.push({ id: ++seq, post_id: postId, parent_id: parent ? parent.parent_id || parent.id : null, author_id: current, body: body.trim(), created_at: now() });
     },
+    async deleteComment(id) {
+      const c = comments.find((x) => x.id === id);
+      need(c && (c.author_id === current || me()?.role === 'admin'), 'Komentář se nepodařilo smazat. Možná nemáte oprávnění.');
+      for (let i = comments.length - 1; i >= 0; i--) if (comments[i].id === id || comments[i].parent_id === id) comments.splice(i, 1);
+    },
     async hideComment(id, reason) { need(isAuthor(), 'Jen autoři mohou moderovat.'); comments.find((c) => c.id === id).hidden_reason = reason; },
     async unhideComment(id) { need(isAuthor(), 'Jen autoři mohou moderovat.'); comments.find((c) => c.id === id).hidden_reason = null; },
 

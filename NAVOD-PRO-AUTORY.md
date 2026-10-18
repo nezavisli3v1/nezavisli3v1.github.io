@@ -18,6 +18,7 @@ Tlačítko Zveřejnit je šedé, dokud něco chybí. Co chybí, je napsané vedl
 - U komentáře klepněte na **Skrýt** a vyberte důvod. Komentář zůstane v diskusi jako „skrytý“ i s důvodem.
 - **Kritiku neskrýváme nikdy.** Jen urážky, osobní údaje, spam a příspěvky mimo téma.
 - Omyl? U skrytého komentáře je **Obnovit**.
+- **Smazat** natrvalo může komentář jen jeho autor (svůj vlastní) a správce (jakýkoli). Smažou se s ním i odpovědi. U cizích komentářů dávejte přednost skrytí s důvodem, aby nevznikl dojem, že mažeme kritiku.
 
 ## Uzavření diskuse
 Když diskuse doběhne, otevřete příspěvek a klepněte na **Uzavřít diskusi**. Napište, co z ní vzešlo a co s tím uděláte. Shrnutí se zobrazí nad komentáři.

@@ -153,6 +153,10 @@ export function createSupabaseApi(url, key) {
       const { data: u } = await sb.auth.getUser();
       fail((await sb.from('comments').insert({ post_id: postId, parent_id: parentId, body: body.trim(), author_id: u.user.id })).error);
     },
+    async deleteComment(id) {
+      const { data, error } = await sb.from('comments').delete().eq('id', id).select('id'); fail(error);
+      if (!data?.length) throw new Error('Komentář se nepodařilo smazat. Možná nemáte oprávnění.');
+    },
     async hideComment(id, reason) { fail((await sb.rpc('hide_comment', { p_id: id, p_reason: reason })).error); },
     async unhideComment(id) { fail((await sb.rpc('unhide_comment', { p_id: id })).error); },
 
