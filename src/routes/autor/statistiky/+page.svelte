@@ -51,7 +51,7 @@
 {:else if !isAdmin()}<p class="empty">Tahle část je jen pro správce.</p>
 {:else}
   <div class="section-head"><div><h1>Statistiky</h1>
-    <p class="lede">Kolikrát byly stránky otevřeny. Počítá se každé otevření, ne jednotliví lidé, a nic se o návštěvnících neukládá. Vaše návštěvy a návštěvy autorů se nepočítají. Čísla vidí jen správce.</p></div>
+    <p class="lede">Kolikrát byly stránky otevřeny. Počítá se každé otevření, ne jednotliví lidé, a nic se o návštěvnících neukládá. Nepočítají se návštěvy autorů ani návštěvy ze zařízení, kde se někdy autor přihlásil, a to ani po odhlášení. Čísla vidí jen správce.</p></div>
     <div class="range" role="group" aria-label="Období">
       {#each RANGES as r}<button aria-pressed={days === r} onclick={() => (days = r)}>{r} dní</button>{/each}
     </div>

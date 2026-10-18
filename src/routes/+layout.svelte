@@ -16,12 +16,16 @@
   let demoUser = $state(null);
 
   // počítadlo: jedno zobrazení na otevřenou stránku; tým se nepočítá, administrace taky ne
+  // Zařízení, kde se někdy přihlásil autor, se nepočítá ani po odhlášení (týmové testování).
+  const TEAM_KEY = 'nz-tymove-zarizeni';
+  const teamDevice = () => { try { return localStorage.getItem(TEAM_KEY) === '1'; } catch { return false; } };
+  $effect(() => { if (isAuthor()) { try { localStorage.setItem(TEAM_KEY, '1'); } catch {} } });
   let lastTracked = '';
   $effect(() => {
     const url = page.url;
-    if (!session.ready || isAuthor()) return;
+    if (!session.ready || isAuthor() || teamDevice()) return;
     const key = url.pathname + url.search;
-    if (key === lastTracked || url.pathname.startsWith('/autor') || url.pathname.startsWith('/ucet')) return;
+    if (key === lastTracked || /^\/(autor|ucet|prihlaseni)/.test(url.pathname)) return;
     lastTracked = key;
     const id = url.pathname === '/clanek/' ? +url.searchParams.get('id') || null : null;
     api.trackView(url.pathname, id);
