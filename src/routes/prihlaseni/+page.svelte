@@ -26,7 +26,7 @@
 <div class="narrow">
   {#if session.user && !session.profile?.display_name}
     <h1>Jak se jmenujete?</h1>
-    <p class="lede">Jméno se zobrazí u vašich komentářů. Stačí třeba „Petra K.“</p>
+    <p class="lede">Jméno se zobrazí u vašich komentářů. Stačí třeba „Jan D.“</p>
     <form onsubmit={saveName}>
       <input class="field" bind:value={name} required minlength="2" maxlength="60" autocomplete="name" aria-label="Jméno">
       <button class="btn">Pokračovat</button>
