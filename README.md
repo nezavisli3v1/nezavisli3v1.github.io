@@ -6,7 +6,7 @@ Web a aplikace uskupení **Nezávislí PRO Mokré, Šindlovy Dvory a Litvínovic
 - **Data** (články, komentáře, ankety, sliby, účty) jsou v databázi Supabase v EU (Frankfurt).
 - **Oprávnění** hlídá databáze, ne web. Kdo není autor, článek nenapíše, ani kdyby web obešel.
 
-Bez nastavené databáze se web spustí v **ukázkovém režimu** s vymyšleným obsahem. Hodí se k ukázce i k vývoji.
+S proměnnou `PUBLIC_DEMO=1` se web spustí v **ukázkovém režimu** s vymyšleným obsahem. Hodí se k ukázce i k vývoji.
 
 ## Role
 
@@ -45,10 +45,7 @@ Počítejte zhruba s hodinou. Pořadí je důležité.
 
 ### 3. Propojení
 
-1. V repozitáři: **Settings → Secrets and variables → Actions → Variables**, přidejte:
-   - `PUBLIC_SUPABASE_URL` = Project URL
-   - `PUBLIC_SUPABASE_ANON_KEY` = anon public klíč
-2. **Actions → Nasazení webu → Run workflow.** Za dvě minuty je web na https://nezavisli3v1.github.io.
+Adresa projektu a **publishable** klíč jsou v `src/lib/config.js`. Klíč je veřejný a smí být ve webu. Klíč *secret* ani *service_role* do kódu nikdy nedávejte.
 
 ### 4. První správce
 
@@ -85,10 +82,11 @@ Až bude web na nezavisli3v1.github.io fungovat:
 
 ```bash
 npm install
-npm run dev        # ukázkový režim na http://localhost:5173
+npm run dev                  # s ostrou databází na http://localhost:5173
+PUBLIC_DEMO=1 npm run dev    # ukázkový režim
 ```
 
-S opravdovou databází: zkopírujte `.env.example` do `.env` a vyplňte. Každý commit do větve `main` se sám zveřejní.
+Každý commit do větve `main` se sám zveřejní.
 
 | složka | co tam je |
 |---|---|
