@@ -5,7 +5,7 @@
   let { post } = $props();
 
   let list = $state([]), text = $state(''), name = $state(''), busy = $state(false);
-  let replyTo = $state(null), replyText = $state(''), modFor = $state(null), delFor = $state(null);
+  let replyTo = $state(null), replyText = $state(''), modFor = $state(null), delFor = $state(null), editFor = $state(null), editText = $state('');
   const canDelete = (c) => session.user && (c.author_id === session.user.id || isAdmin());
 
   const load = () => api.listComments(post.id).then((c) => (list = c));
@@ -27,6 +27,11 @@
   }
   async function submit(e) { e.preventDefault(); if (text.trim() && await send(text)) text = ''; }
   async function submitReply(e) { e.preventDefault(); if (replyText.trim() && await send(replyText, replyTo)) { replyTo = null; replyText = ''; } }
+  async function saveEdit(e, c) {
+    e.preventDefault();
+    if (!editText.trim()) return;
+    try { await api.updateComment(c.id, editText); editFor = null; await load(); toast('Komentář upraven.'); } catch (err) { toast(err.message); }
+  }
   async function del(c) {
     try { await api.deleteComment(c.id); delFor = null; await load(); toast('Komentář smazán.'); } catch (e) { toast(e.message); }
   }
@@ -38,17 +43,23 @@
   <div class="c" class:official={c.author_is_team && !c.hidden_reason}>
     <div class="who">{c.author_name}
       {#if c.author_badge}<span class="badge">{c.author_badge}</span>{:else if c.author_is_team}<span class="badge blue">Nezávislí PRO</span>{/if}
-      <span class="meta">{date(c.created_at)}</span></div>
+      <span class="meta">{date(c.created_at)}{#if c.edited_at}<span title={`Upraveno ${new Date(c.edited_at).toLocaleString('cs-CZ')}`}>{' · upraveno'}</span>{/if}</span></div>
     {#if c.hidden_reason}
       <div class="hidden">Komentář skryl moderátor. Důvod: {c.hidden_reason}.
         {#if isAuthor()}<br><span class="orig">Původní text (vidí jen autoři): {c.body}</span> <button class="linkbtn" onclick={() => unhide(c.id)}>Obnovit</button>{/if}
         {#if isAdmin()} · <button class="linkbtn danger" onclick={() => (delFor = delFor === c.id ? null : c.id)}>Smazat</button>{/if}
       </div>
     {:else}
-      <p>{c.body}</p>
+      {#if editFor === c.id}
+        <form class="form" onsubmit={(e) => saveEdit(e, c)}>
+          <textarea class="field" bind:value={editText} rows="3" required maxlength="3000" aria-label="Upravit komentář"></textarea>
+          <div class="row"><button class="btn" disabled={!editText.trim() || editText.trim() === c.body}>Uložit úpravu</button><button type="button" class="btn ghost" onclick={() => (editFor = null)}>Zrušit</button></div>
+        </form>
+      {:else}<p>{c.body}</p>{/if}
       <div class="acts">
         {#if open && depth === 0}<button onclick={() => { replyTo = replyTo === c.id ? null : c.id; replyText = ''; }}>Odpovědět</button>{/if}
         {#if isAuthor() && !c.author_is_team}<button class="mod" onclick={() => (modFor = modFor === c.id ? null : c.id)}>Skrýt</button>{/if}
+        {#if open && session.user && c.author_id === session.user.id && editFor !== c.id}<button onclick={() => { editFor = c.id; editText = c.body; }}>Upravit</button>{/if}
         {#if canDelete(c)}<button class="mod" onclick={() => (delFor = delFor === c.id ? null : c.id)}>Smazat</button>{/if}
       </div>
       {#if modFor === c.id}

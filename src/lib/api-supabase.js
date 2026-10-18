@@ -153,6 +153,10 @@ export function createSupabaseApi(url, key) {
       const { data: u } = await sb.auth.getUser();
       fail((await sb.from('comments').insert({ post_id: postId, parent_id: parentId, body: body.trim(), author_id: u.user.id })).error);
     },
+    async updateComment(id, body) {
+      const { data, error } = await sb.from('comments').update({ body: body.trim() }).eq('id', id).select('id'); fail(error);
+      if (!data?.length) throw new Error('Komentář se nepodařilo upravit. Upravit lze jen vlastní komentář.');
+    },
     async deleteComment(id) {
       const { data, error } = await sb.from('comments').delete().eq('id', id).select('id'); fail(error);
       if (!data?.length) throw new Error('Komentář se nepodařilo smazat. Možná nemáte oprávnění.');

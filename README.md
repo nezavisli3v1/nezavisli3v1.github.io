@@ -35,7 +35,7 @@ Počítejte zhruba s hodinou. Pořadí je důležité.
 ### 2. Supabase
 
 1. Na supabase.com založte projekt. **Region: Central EU (Frankfurt).** Heslo k databázi si uložte, aplikace ho nepotřebuje.
-2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql` a `005_mazani_komentaru.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
+2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql`, `005_mazani_komentaru.sql` a `006_uprava_komentaru.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
 3. **Authentication → URL Configuration:**
    - Site URL: `https://nezavisli3v1.cz`
    - Redirect URLs: `https://nezavisli3v1.cz/**` a `https://nezavisli3v1.github.io/**`
@@ -95,7 +95,7 @@ Každý commit do větve `main` se sám zveřejní.
 | `src/lib/api-demo.js` | ukázkový režim |
 | `supabase/migrations/` | databáze a pravidla přístupu |
 
-Změny databáze přidávejte jako nový soubor `supabase/migrations/006_…sql`, nikdy nepřepisujte staré.
+Změny databáze přidávejte jako nový soubor `supabase/migrations/007_…sql`, nikdy nepřepisujte staré.
 
 ## Připravuje se
 

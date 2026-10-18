@@ -145,6 +145,12 @@ export function createDemoApi() {
       const parent = comments.find((c) => c.id === parentId);
       comments.push({ id: ++seq, post_id: postId, parent_id: parent ? parent.parent_id || parent.id : null, author_id: current, body: body.trim(), created_at: now() });
     },
+    async updateComment(id, body) {
+      const c = comments.find((x) => x.id === id);
+      need(c && c.author_id === current, 'Komentář se nepodařilo upravit. Upravit lze jen vlastní komentář.');
+      need(!c.hidden_reason, 'Skrytý komentář nejde upravit.');
+      c.body = body.trim(); c.edited_at = now();
+    },
     async deleteComment(id) {
       const c = comments.find((x) => x.id === id);
       need(c && (c.author_id === current || me()?.role === 'admin'), 'Komentář se nepodařilo smazat. Možná nemáte oprávnění.');
