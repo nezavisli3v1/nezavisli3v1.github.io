@@ -11,7 +11,7 @@
   $effect(() => { session.profile; load(); });
   const roots = $derived(list.filter((c) => !c.parent_id));
   const repliesOf = (id) => list.filter((c) => c.parent_id === id);
-  const open = $derived(post.status === 'published' && post.comments_enabled && !post.closed_at);
+  const open = $derived(post.comments_enabled && !post.closed_at);
   const needName = $derived(session.user && !session.profile?.display_name);
   const loginHref = $derived(`/prihlaseni/?next=${encodeURIComponent(`/clanek/?id=${post.id}`)}`);
 

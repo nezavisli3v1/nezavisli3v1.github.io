@@ -2,7 +2,7 @@
   import { page } from '$app/state';
   import { api } from '$lib/api.js';
   import { session, isAuthor, isAdmin, toast } from '$lib/state.svelte.js';
-  import { date, clean, fileSize } from '$lib/util.js';
+  import { date, clean, fileSize, isLive, isScheduled, when } from '$lib/util.js';
   import Poll from '$lib/components/Poll.svelte';
   import Comments from '$lib/components/Comments.svelte';
 
@@ -34,7 +34,7 @@
     <h1>{post.title}</h1>
     <div class="meta">{post.author?.display_name}
       {#if post.author?.badge}<span class="badge">{post.author.badge}</span>{/if}
-      · {post.status === 'draft' ? 'koncept, vidí jen autoři' : date(post.published_at)}</div>
+      · {post.status === 'draft' ? 'koncept, vidí jen autoři' : isScheduled(post) ? `naplánováno na ${when(post.published_at)}, zatím vidí jen autoři` : date(post.published_at)}</div>
     {#if cover}<img src={cover} alt="">{/if}
     {#if post.perex}<p class="perex">{post.perex}</p>{/if}
     <div class="body">{@html clean(post.body_html)}</div>
@@ -57,7 +57,7 @@
     <button class="btn ghost" onclick={copyLink}>Zkopírovat odkaz</button>
     {#if isAuthor()}
       <a class="btn ghost" href={`/autor/psat/?id=${post.id}`}>Upravit</a>
-      {#if post.status === 'published' && !post.closed_at && post.comments_enabled}
+      {#if isLive(post) && !post.closed_at && post.comments_enabled}
         <button class="btn ghost" onclick={() => (closing = !closing)}>Uzavřít diskusi</button>
       {/if}
     {/if}
@@ -71,7 +71,7 @@
     </form>
   {/if}
 
-  {#if post.status === 'published'}<Comments {post} />{/if}
+  {#if isLive(post)}<Comments {post} />{/if}
 {/if}
 
 <style>

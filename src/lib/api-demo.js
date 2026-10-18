@@ -74,12 +74,13 @@ export function createDemoApi() {
     async deleteMyAccount() { need(!isAuthor(), 'Účet autora může smazat jen správce.'); current = null; emit(); },
 
     async listPosts({ kind, drafts = false } = {}) {
-      const list = posts.filter((p) => (!kind || p.kind === kind) && (p.status === 'published' || (drafts && isAuthor())))
+      const live = (p) => p.status === 'published' && p.published_at && p.published_at <= now();
+      const list = posts.filter((p) => (!kind || p.kind === kind) && (live(p) || (drafts && isAuthor())))
         .sort((a, b) => (b.published_at || '9').localeCompare(a.published_at || '9'));
       return wait(list.map((p) => ({ ...p, author: pub(p.author_id), comment_count: comments.filter((c) => c.post_id === p.id).length, has_poll: polls.some((x) => x.post_id === p.id) })));
     },
     async getPost(id) {
-      const p = posts.find((x) => x.id === +id && (x.status === 'published' || isAuthor()));
+      const p = posts.find((x) => x.id === +id && ((x.status === 'published' && x.published_at <= now()) || isAuthor()));
       if (!p) return wait(null);
       const poll = polls.find((x) => x.post_id === p.id);
       return wait({ ...p, author: pub(p.author_id), attachments: attachments.filter((a) => a.post_id === p.id).sort((a, b) => a.position - b.position), poll: poll && { id: poll.id, question: poll.question, options: poll.options } });
@@ -101,6 +102,8 @@ export function createDemoApi() {
       if (!p) { p = { id: ++seq, author_id: current, created_at: now(), closed_at: null, closing_summary: null }; posts.push(p); }
       Object.assign(p, { kind: d.kind, title: d.title.trim(), perex: d.perex.trim(), body_html: d.body_html, category: d.category,
         cover_path: d.cover_path || null, status: d.status, comments_enabled: d.comments_enabled, updated_at: now() });
+      if (d.publish_at !== undefined) p.published_at = d.publish_at;
+      if (p.status === 'draft') p.published_at = null;
       if (p.status === 'published' && !p.published_at) p.published_at = now();
       if (d.attachments) {
         for (let i = attachments.length - 1; i >= 0; i--) if (attachments[i].post_id === p.id) attachments.splice(i, 1);

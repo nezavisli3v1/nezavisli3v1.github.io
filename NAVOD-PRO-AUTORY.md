@@ -10,7 +10,7 @@ Přihlaste se na nezavisli3v1.cz svým e-mailem (vpravo nahoře **Přihlásit**)
 4. Případně **přidejte fotku**. Jen vlastní nebo se svolením. Z telefonu se sama zmenší.
 5. Případně **přidejte PDF přílohy** (zápis, usnesení, rozpočet), každou do 10 MB. Název přílohy přepište tak, aby bylo jasné, co v ní je. **Před nahráním zkontrolujte, že dokument neobsahuje osobní údaje soukromých lidí** (jména, adresy, rodná čísla); pokud ano, začerněte je.
 6. Rozhodněte o **komentářích** a případně přidejte **anketu**. Anketu po zveřejnění už nejde měnit.
-7. **Uložit koncept** (vidí jen autoři) nebo **Zveřejnit**.
+7. **Uložit koncept** (vidí jen autoři), **Naplánovat…** na konkrétní den a hodinu, nebo **Zveřejnit** hned. Naplánovaný příspěvek do té doby vidí jen autoři a v záložce Psaní je v části Naplánované, kde ho jde upravit, přeplánovat, zrušit nebo zveřejnit hned.
 
 Tlačítko Zveřejnit je šedé, dokud něco chybí. Co chybí, je napsané vedle.
 

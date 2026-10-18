@@ -36,3 +36,14 @@ export function fileSize(b) {
   return `${(b / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
 }
 export const MAX_ATTACHMENT = 10 * 1024 * 1024;
+
+// naplánovaný = zveřejněný s datem vydání v budoucnosti
+export const isScheduled = (p) => p?.status === 'published' && !!p.published_at && new Date(p.published_at) > new Date();
+export const isLive = (p) => p?.status === 'published' && !!p.published_at && new Date(p.published_at) <= new Date();
+const fmtWhen = new Intl.DateTimeFormat('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric', hour: 'numeric', minute: '2-digit' });
+export const when = (iso) => fmtWhen.format(new Date(iso));
+// hodnota pro <input type="datetime-local"> v místním čase
+export function localInput(d) {
+  const z = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`;
+}

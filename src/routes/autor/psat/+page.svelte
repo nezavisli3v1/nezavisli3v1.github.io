@@ -3,12 +3,13 @@
   import { goto } from '$app/navigation';
   import { api } from '$lib/api.js';
   import { session, isAuthor, isAdmin, toast } from '$lib/state.svelte.js';
-  import { CATEGORIES, textLength, fileSize, MAX_ATTACHMENT } from '$lib/util.js';
+  import { CATEGORIES, textLength, fileSize, MAX_ATTACHMENT, isScheduled, isLive, when, localInput } from '$lib/util.js';
   import Editor from '$lib/components/Editor.svelte';
 
   const editId = $derived(+page.url.searchParams.get('id') || null);
   let d = $state(null), loaded = $state(false), busy = $state(false), uploading = $state(false), uploadingPdf = $state(false), confirmDel = $state(false);
   let hadPoll = false;
+  let planning = $state(false), planAt = $state('');
 
   $effect(() => {
     if (!session.ready || !isAuthor() || loaded) return;
@@ -26,7 +27,14 @@
     });
   });
 
-  const pollEditable = $derived(d && d.status === 'draft');
+  const scheduled = $derived(d && isScheduled(d));
+  const live = $derived(d && isLive(d));
+  const pollEditable = $derived(d && !live);
+  const minPlan = $derived(localInput(new Date(Date.now() + 5 * 60000)));
+  function openPlan() {
+    const t = d.published_at && scheduled ? new Date(d.published_at) : (() => { const x = new Date(Date.now() + 864e5); x.setHours(8, 0, 0, 0); return x; })();
+    planAt = localInput(t); planning = true;
+  }
   const missing = $derived(!d ? [] : [
     d.title.trim().length < 3 && 'nadpis',
     !d.perex.trim() && 'shrnutí',
@@ -64,13 +72,20 @@
   }
   function moveAtt(i, dir) { const a = d.attachments; [a[i], a[i + dir]] = [a[i + dir], a[i]]; }
 
-  async function save(status) {
+  // mode: 'draft' | 'now' | 'plan' | 'keep' (uložit změny bez změny data vydání)
+  async function save(mode) {
+    let publish_at, status = mode === 'draft' ? 'draft' : 'published';
+    if (mode === 'plan') {
+      const t = new Date(planAt);
+      if (isNaN(t) || t <= new Date()) { toast('Zvolte čas v budoucnosti.'); return; }
+      publish_at = t.toISOString();
+    } else if (mode === 'now' || mode === 'draft') publish_at = null;
     busy = true;
     try {
-      const wasDraft = d.status === 'draft';
-      const id = await api.savePost({ ...d, status, pollEditable: pollEditable || (!hadPoll && d.addPoll),
+      const id = await api.savePost({ ...d, status, publish_at, pollEditable: pollEditable || (!hadPoll && d.addPoll),
         poll: d.addPoll ? d.poll : null });
-      toast(status === 'draft' ? 'Uloženo jako koncept. Vidí ho jen autoři.' : wasDraft ? 'Zveřejněno.' : 'Změny uloženy.');
+      toast({ draft: 'Uloženo jako koncept. Vidí ho jen autoři.', now: 'Zveřejněno.', keep: 'Změny uloženy.',
+        plan: `Naplánováno na ${when(publish_at)}. Do té doby ho vidí jen autoři.` }[mode]);
       goto(`/clanek/?id=${id}`);
     } catch (err) { toast(err.message); } finally { busy = false; }
   }
@@ -87,7 +102,9 @@
 {:else if d}
   <div class="section-head"><div>
     <h1>{editId ? 'Úprava' : d.kind === 'question' ? 'Nová otázka' : 'Nový článek'}</h1>
-    <p class="lede">{d.status === 'published' ? 'Příspěvek už je zveřejněný. Změny se projeví hned po uložení.' : 'Rozepsaný text můžete kdykoli uložit jako koncept a dokončit později.'}</p>
+    <p class="lede">{live ? 'Příspěvek už je zveřejněný. Změny se projeví hned po uložení.'
+      : scheduled ? `Naplánováno na ${when(d.published_at)}. Do té doby ho vidí jen autoři.`
+      : 'Rozepsaný text můžete kdykoli uložit jako koncept a dokončit později, nebo naplánovat na konkrétní čas.'}</p>
   </div></div>
 
   <div class="steps">
@@ -180,13 +197,27 @@
   </div>
 
   <div class="publish">
-    {#if missing.length}<span class="missing">Ještě chybí: {missing.join(', ')}</span>{/if}
-    {#if d.status === 'draft'}
-      <button class="btn ghost" disabled={busy || d.title.trim().length < 3} onclick={() => save('draft')}>Uložit koncept</button>
-      <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('published')}>Zveřejnit</button>
+    {#if planning}
+      <label class="plan" for="w-plan">Vydat
+        <input id="w-plan" type="datetime-local" class="field" bind:value={planAt} min={minPlan} step="300">
+      </label>
+      <button class="btn ghost" disabled={busy} onclick={() => (planning = false)}>Zrušit</button>
+      <button class="btn" disabled={busy || missing.length > 0 || !planAt} onclick={() => save('plan')}>Naplánovat</button>
     {:else}
-      <button class="btn ghost" disabled={busy} onclick={() => save('draft')}>Stáhnout mezi koncepty</button>
-      <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('published')}>Uložit změny</button>
+      {#if missing.length}<span class="missing">Ještě chybí: {missing.join(', ')}</span>{/if}
+      {#if live}
+        <button class="btn ghost" disabled={busy} onclick={() => save('draft')}>Stáhnout mezi koncepty</button>
+        <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('keep')}>Uložit změny</button>
+      {:else if scheduled}
+        <button class="btn ghost" disabled={busy} onclick={() => save('draft')}>Zrušit plán</button>
+        <button class="btn ghost" disabled={busy || missing.length > 0} onclick={openPlan}>Změnit čas</button>
+        <button class="btn ghost" disabled={busy || missing.length > 0} onclick={() => save('keep')}>Uložit změny</button>
+        <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('now')}>Zveřejnit hned</button>
+      {:else}
+        <button class="btn ghost" disabled={busy || d.title.trim().length < 3} onclick={() => save('draft')}>Uložit koncept</button>
+        <button class="btn ghost" disabled={busy || missing.length > 0} onclick={openPlan}>Naplánovat…</button>
+        <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('now')}>Zveřejnit</button>
+      {/if}
     {/if}
   </div>
 {/if}
@@ -215,5 +246,7 @@
   .addpdf { align-self: flex-start; }
   .hint.warn { color: var(--warn); margin-top: 10px; }
   @media (max-width: 520px) { .atts li { grid-template-columns: auto 1fr auto; } .atts .meta { display: none; } }
+  .plan { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-right: auto; }
+  .plan .field { width: auto; padding: 8px 10px; }
   .missing { font-size: 13px; color: var(--warn); margin-right: auto; }
 </style>

@@ -1,6 +1,6 @@
 <script>
   import { api } from '$lib/api.js';
-  import { date, plural } from '$lib/util.js';
+  import { date, plural, isScheduled, when } from '$lib/util.js';
   let { post, href = `/clanek/?id=${post.id}` } = $props();
   const cover = $derived(api.coverUrl(post.cover_path));
 </script>
@@ -11,9 +11,10 @@
   <h2>{post.title}</h2>
   {#if post.perex}<p>{post.perex}</p>{/if}
   <span class="foot">
-    <span class="meta">{post.author?.display_name} · {post.status === 'draft' ? 'upraveno ' + date(post.updated_at) : date(post.published_at)}</span>
+    <span class="meta">{post.author?.display_name} · {post.status === 'draft' ? 'upraveno ' + date(post.updated_at) : isScheduled(post) ? 'vyjde ' + when(post.published_at) : date(post.published_at)}</span>
     {#if post.status === 'draft'}<span class="badge warn">koncept</span>{/if}
-    {#if post.status === 'published'}<span class="chip">{plural(post.comment_count, 'komentář', 'komentáře', 'komentářů')}</span>{/if}
+    {#if isScheduled(post)}<span class="badge blue">naplánováno</span>{/if}
+    {#if post.status === 'published' && !isScheduled(post)}<span class="chip">{plural(post.comment_count, 'komentář', 'komentáře', 'komentářů')}</span>{/if}
     {#if post.has_poll}<span class="chip">Anketa</span>{/if}
     {#if post.closed_at}<span class="chip">Uzavřeno</span>{/if}
   </span>

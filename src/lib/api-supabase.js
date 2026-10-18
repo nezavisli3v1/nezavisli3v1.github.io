@@ -48,7 +48,7 @@ export function createSupabaseApi(url, key) {
         .order('published_at', { ascending: false, nullsFirst: true })
         .order('created_at', { ascending: false });
       if (kind) q = q.eq('kind', kind);
-      if (!drafts) q = q.eq('status', 'published');
+      if (!drafts) q = q.eq('status', 'published').lte('published_at', new Date().toISOString());
       const posts = await one(q);
       const ids = posts.map((p) => p.id);
       const [authors, counts, polls] = await Promise.all([
@@ -86,6 +86,8 @@ export function createSupabaseApi(url, key) {
         kind: d.kind, title: d.title.trim(), perex: d.perex.trim(), body_html: d.body_html, category: d.category,
         cover_path: d.cover_path || null, status: d.status, comments_enabled: d.comments_enabled
       };
+      // publish_at: undefined = datum vydání neměnit, null = teď (nebo smazat u konceptu), ISO = naplánovat
+      if (d.publish_at !== undefined) row.published_at = d.publish_at;
       let id = d.id;
       if (id) fail((await sb.from('posts').update(row).eq('id', id)).error);
       else {
