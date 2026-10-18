@@ -119,7 +119,16 @@ export function createSupabaseApi(url, key) {
       }
       return id;
     },
-    async deletePost(id) { fail((await sb.from('posts').delete().eq('id', id)).error); },
+    // smaže příspěvek i jeho soubory (fotku a PDF), aby nezůstaly dostupné přes přímý odkaz
+    async deletePost(id) {
+      const [post, atts] = await Promise.all([
+        one(sb.from('posts').select('cover_path').eq('id', id).maybeSingle()),
+        one(sb.from('attachments').select('path').eq('post_id', id))
+      ]);
+      fail((await sb.from('posts').delete().eq('id', id)).error);
+      if (post?.cover_path) await sb.storage.from('covers').remove([post.cover_path]);
+      if (atts.length) await sb.storage.from('attachments').remove(atts.map((a) => a.path));
+    },
     async closeDiscussion(id, summary) { fail((await sb.rpc('close_discussion', { p_post: id, p_summary: summary })).error); },
 
     async uploadCover(file) {
