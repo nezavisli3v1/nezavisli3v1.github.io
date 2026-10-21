@@ -32,7 +32,7 @@
 <svelte:window onkeydown={key} />
 
 <div class="section-head"><div><h1>Územní plán</h1>
-  <p class="lede">Územní plán obce Litvínovice a jeho změny přehledně na jednom místě. Výkresy si můžete rozkliknout a přiblížit, úplné dokumenty stáhnout v PDF.</p></div>
+  <p class="lede">Územní plán obce Litvínovice, platný od 21.&nbsp;3.&nbsp;2025, přehledně na jednom místě. Výkresy si můžete rozkliknout a přiblížit, úplné dokumenty stáhnout v&nbsp;PDF.</p></div>
   {#if isAuthor() && editing === null && sections}<button class="btn ghost" onclick={() => (editing = 'new')}>+ Přidat oddíl</button>{/if}
 </div>
 
