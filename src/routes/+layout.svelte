@@ -34,8 +34,8 @@
   const tabs = $derived([
     { href: '/', label: 'Aktuality', on: path === '/' || path.startsWith('/clanek') },
     { href: '/diskuse/', label: 'Diskuse', on: path.startsWith('/diskuse') },
-    { href: '/sliby/', label: 'Hlídač slibů', on: path.startsWith('/sliby') },
     { href: '/uzemni-plan/', label: 'Územní plán', on: path.startsWith('/uzemni-plan') },
+    { href: '/sliby/', label: 'Hlídač slibů', on: path.startsWith('/sliby') },
     ...(isAuthor() ? [{ href: '/autor/', label: 'Psaní', on: path.startsWith('/autor') && !path.startsWith('/autor/lide') && !path.startsWith('/autor/statistiky') }] : []),
     ...(isAdmin() ? [{ href: '/autor/statistiky/', label: 'Statistiky', on: path.startsWith('/autor/statistiky') }] : []),
     ...(isAdmin() ? [{ href: '/autor/lide/', label: 'Lidé', on: path.startsWith('/autor/lide') }] : [])
