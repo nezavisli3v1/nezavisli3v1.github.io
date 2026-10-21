@@ -3,7 +3,7 @@
   import { session, isAdmin, toast } from '$lib/state.svelte.js';
 
   const RANGES = [7, 30, 90];
-  const PAGE_NAMES = { '/': 'Aktuality (úvod)', '/diskuse/': 'Diskuse', '/sliby/': 'Hlídač slibů', '/pravidla/': 'Pravidla a ochrana údajů', '/prihlaseni/': 'Přihlášení' };
+  const PAGE_NAMES = { '/': 'Aktuality (úvod)', '/diskuse/': 'Diskuse', '/sliby/': 'Hlídač slibů', '/uzemni-plan/': 'Územní plán', '/pravidla/': 'Pravidla a ochrana údajů', '/prihlaseni/': 'Přihlášení' };
   const fmtDay = new Intl.DateTimeFormat('cs-CZ', { weekday: 'short', day: 'numeric', month: 'numeric' });
   const fmtShort = new Intl.DateTimeFormat('cs-CZ', { day: 'numeric', month: 'numeric' });
   const num = new Intl.NumberFormat('cs-CZ');

@@ -183,6 +183,54 @@ export function createSupabaseApi(url, key) {
       fail((await sb.rpc('set_promise_status', { p_promise: id, p_status: status, p_note: note })).error);
     },
 
+    // ── stálé stránky (Územní plán): oddíly s obrázky a PDF
+    async listSections(page) {
+      const rows = await one(sb.from('page_sections').select('*, section_files(*)').eq('page', page).order('position'));
+      return rows.map(({ section_files, ...s }) => ({ ...s, files: (section_files || []).sort((a, b) => a.position - b.position) }));
+    },
+    async saveSection(page, d) {
+      const row = { page, title: d.title.trim(), body_html: d.body_html || '', position: d.position ?? 0 };
+      let id = d.id;
+      if (id) fail((await sb.from('page_sections').update(row).eq('id', id)).error);
+      else id = (await one(sb.from('page_sections').insert(row).select('id').single())).id;
+      const existing = await one(sb.from('section_files').select('id,path,thumb_path').eq('section_id', id));
+      const keep = new Set(d.files.filter((f) => f.id).map((f) => f.id));
+      const gone = existing.filter((f) => !keep.has(f.id));
+      if (gone.length) {
+        fail((await sb.from('section_files').delete().in('id', gone.map((f) => f.id))).error);
+        await sb.storage.from('pages').remove(gone.flatMap((f) => [f.path, f.thumb_path].filter(Boolean)));
+      }
+      for (const [i, f] of d.files.entries()) {
+        const meta = { name: f.name.trim() || (f.kind === 'pdf' ? 'Dokument' : 'Obrázek'), position: i };
+        if (f.id) fail((await sb.from('section_files').update(meta).eq('id', f.id)).error);
+        else fail((await sb.from('section_files').insert({ ...meta, section_id: id, kind: f.kind, path: f.path, thumb_path: f.thumb_path || null,
+          size_bytes: f.size_bytes, width: f.width || null, height: f.height || null })).error);
+      }
+      return id;
+    },
+    async deleteSection(id) {
+      const files = await one(sb.from('section_files').select('path,thumb_path').eq('section_id', id));
+      fail((await sb.from('page_sections').delete().eq('id', id)).error);
+      if (files.length) await sb.storage.from('pages').remove(files.flatMap((f) => [f.path, f.thumb_path].filter(Boolean)));
+    },
+    async reorderSections(ids) {
+      for (const [i, id] of ids.entries()) fail((await sb.from('page_sections').update({ position: i }).eq('id', id)).error);
+    },
+    async uploadPageFile(file, prepared) {
+      const base = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}`;
+      const up = async (path, body, type) => fail((await sb.storage.from('pages').upload(path, body, { cacheControl: '31536000', contentType: type })).error);
+      if (!prepared) {
+        await up(`${base}.pdf`, file, 'application/pdf');
+        return { kind: 'pdf', path: `${base}.pdf`, name: file.name.replace(/\.pdf$/i, ''), size_bytes: file.size };
+      }
+      const ext = prepared.type === 'image/png' ? 'png' : prepared.type === 'image/webp' ? 'webp' : 'jpg';
+      await up(`${base}.${ext}`, prepared.main.blob, prepared.type);
+      await up(`${base}-nahled.jpg`, prepared.thumb.blob, 'image/jpeg');
+      return { kind: 'image', path: `${base}.${ext}`, thumb_path: `${base}-nahled.jpg`, name: file.name.replace(/\.\w+$/, ''),
+        size_bytes: prepared.main.blob.size, width: prepared.main.width, height: prepared.main.height };
+    },
+    pageFileUrl(path) { return path ? sb.storage.from('pages').getPublicUrl(path).data.publicUrl : null; },
+
     // ── počítadlo (zápis smí každý, čtení jen správce)
     async trackView(path, postId = null) {
       try { await sb.rpc('track_view', { p_path: path, p_post: postId }); } catch { /* statistika nesmí rozbít web */ }

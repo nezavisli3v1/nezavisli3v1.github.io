@@ -28,3 +28,9 @@ Klepněte na bod programu, vyberte nový stav a **napište, co se stalo**. Bez p
 
 ## Sdílení
 U každého příspěvku je **Zkopírovat odkaz**. Vložte ho na Facebook nebo do zprávy, lidé se proklikají rovnou do diskuse.
+
+## Územní plán
+Záložka **Územní plán** se skládá z oddílů (např. „Platný územní plán“, „Změna č. 2“). Jako autor u oddílu vidíte **Upravit** a šipkami měníte pořadí oddílů. Nový oddíl přidáte tlačítkem **+ Přidat oddíl** nahoře.
+- **Výkresy** nahrajte jako obrázky (JPG, PNG). Čtenáři si je rozkliknou přes celou obrazovku. Velké obrázky se samy zmenší.
+- **Úplné dokumenty** (textová část, odůvodnění) přidejte jako PDF, do 25 MB.
+- Názvy souborů přepište tak, aby bylo jasné, co zobrazují, a nezapomeňte na **Uložit oddíl**.

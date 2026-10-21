@@ -52,6 +52,24 @@ export function createDemoApi() {
   ];
   const chapters = structuredClone(DEMO_CHAPTERS);
   const covers = {}; const files = {};
+  // ukázkový výkres: jednoduchá „mapa“ jako SVG
+  const demoImg = (path) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 840"><rect width="1200" height="840" fill="#F3EFE2"/>` +
+    `<path d="M0 520 C200 470 380 600 600 540 S1000 420 1200 470 V840 H0Z" fill="#CFE3C4"/>` +
+    `<path d="M140 120h300v200H140z" fill="#E9A8A0"/><path d="M520 160h260v180H520z" fill="#F2C987"/><path d="M820 90h240v260H820z" fill="#E9A8A0"/>` +
+    `<path d="M0 400 H1200" stroke="#888" stroke-width="14"/><path d="M660 0 V840" stroke="#888" stroke-width="10"/>` +
+    `<ellipse cx="300" cy="650" rx="170" ry="80" fill="#9CC7E6"/>` +
+    `<text x="40" y="800" font-family="Arial" font-size="38" fill="#444">${path === 'demo-up2' ? 'Ukázka: koordinační výkres' : 'Ukázka: hlavní výkres'}</text></svg>`);
+  const sections = [
+    { id: 501, page: 'uzemni-plan', position: 0, title: 'Ukázka: Platný územní plán', updated_at: daysAgo(2),
+      body_html: '<p>Ukázkový oddíl. Tady bude krátce, co územní plán obsahuje, kdy nabyl účinnosti a kde je oficiální verze na webu obce.</p>',
+      files: [
+        { id: 601, kind: 'image', path: 'demo-up1', thumb_path: 'demo-up1', name: 'Hlavní výkres', size_bytes: 2400000, width: 1200, height: 840, position: 0 },
+        { id: 602, kind: 'image', path: 'demo-up2', thumb_path: 'demo-up2', name: 'Koordinační výkres', size_bytes: 2100000, width: 1200, height: 840, position: 1 },
+        { id: 603, kind: 'pdf', path: 'demo-pdf', name: 'Textová část územního plánu', size_bytes: 1830000, position: 2 }] },
+    { id: 502, page: 'uzemni-plan', position: 1, title: 'Ukázka: Změna č. 1 (v přípravě)', updated_at: daysAgo(1),
+      body_html: '<p>Co se mění, proč a do kdy lze podat připomínky.</p>', files: [] }
+  ];
   const attachments = [{ id: 1, post_id: 1, path: 'demo-zapis', name: 'Ukázka: zápis ze zasedání zastupitelstva', size_bytes: 482000, position: 0 }];
 
   // přepínač „kdo jsem“ jen pro ukázku
@@ -166,6 +184,24 @@ export function createDemoApi() {
       p.status = status; p.log.unshift({ id: ++seq, status, note: note.trim() || 'Stav vrácen na „nezahájeno“.', author_id: current, created_at: now() });
     },
 
+    async listSections() { return wait(sections.slice().sort((a, b) => a.position - b.position)); },
+    async saveSection(page, d) {
+      need(isAuthor(), 'K této akci nemáte oprávnění.');
+      let s = sections.find((x) => x.id === d.id);
+      if (!s) { s = { id: ++seq, page }; sections.push(s); }
+      Object.assign(s, { title: d.title.trim(), body_html: d.body_html || '', position: d.position ?? s.position ?? sections.length, updated_at: now(),
+        files: d.files.map((f, i) => ({ ...f, id: f.id || ++seq, position: i, name: f.name.trim() || 'Soubor' })) });
+      return s.id;
+    },
+    async deleteSection(id) { need(isAuthor(), 'K této akci nemáte oprávnění.'); sections.splice(sections.findIndex((x) => x.id === id), 1); },
+    async reorderSections(ids) { ids.forEach((id, i) => (sections.find((x) => x.id === id).position = i)); },
+    async uploadPageFile(file, prepared) {
+      if (!prepared) { const key = `demo-${++seq}`; files[key] = URL.createObjectURL(file); return { kind: 'pdf', path: key, name: file.name.replace(/\.pdf$/i, ''), size_bytes: file.size }; }
+      const key = `demo-${++seq}`, tkey = `demo-${++seq}`;
+      files[key] = URL.createObjectURL(prepared.main.blob); files[tkey] = URL.createObjectURL(prepared.thumb.blob);
+      return { kind: 'image', path: key, thumb_path: tkey, name: file.name.replace(/\.\w+$/, ''), size_bytes: prepared.main.blob.size, width: prepared.main.width, height: prepared.main.height };
+    },
+    pageFileUrl(path) { return files[path] || demoImg(path); },
     async trackView() {},
     async statsDaily(days) {
       need(me()?.role === 'admin', 'Jen pro správce.');
