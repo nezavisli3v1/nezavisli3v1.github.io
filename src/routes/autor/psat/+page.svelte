@@ -84,8 +84,8 @@
     try {
       const id = await api.savePost({ ...d, status, publish_at, pollEditable: pollEditable || (!hadPoll && d.addPoll),
         poll: d.addPoll ? d.poll : null });
-      toast({ draft: 'Uloženo jako koncept. Vidí ho jen autoři.', now: 'Zveřejněno.', keep: 'Změny uloženy.',
-        plan: `Naplánováno na ${when(publish_at)}. Do té doby ho vidí jen autoři.` }[mode]);
+      toast(mode === 'plan' ? `Naplánováno na ${when(publish_at)}. Do té doby ho vidí jen autoři.`
+        : { draft: 'Uloženo jako koncept. Vidí ho jen autoři.', now: 'Zveřejněno.', keep: 'Změny uloženy.' }[mode]);
       goto(`/clanek/?id=${id}`);
     } catch (err) { toast(err.message); } finally { busy = false; }
   }
