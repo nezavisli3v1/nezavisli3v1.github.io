@@ -11,7 +11,6 @@
 
   async function vote(id) {
     if (closed) return;
-    if (!session.user) { toast('Pro hlasování se přihlaste.'); return; }
     try { await api.vote(id); await load(); } catch (e) { toast(e.message); }
   }
 </script>
@@ -28,7 +27,6 @@
   {/each}
   <span class="meta">
     {#if closed}Anketa je uzavřená · {total} hlasů
-    {:else if !session.user}<a href={`/prihlaseni/?next=${encodeURIComponent(location.pathname + location.search)}`}>Přihlaste se</a> a hlasujte. Výsledky uvidíte po hlasování.
     {:else if res?.mine === null}Klepnutím hlasujte. Výsledky uvidíte po hlasování.
     {:else}{total} hlasů · svůj hlas můžete změnit{/if}
   </span>

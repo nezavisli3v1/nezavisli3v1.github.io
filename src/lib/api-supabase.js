@@ -1,6 +1,7 @@
 // Přístup k datům přes Supabase. Oprávnění hlídá databáze (viz supabase/migrations),
 // tady se jen skládají dotazy a překládají chyby do češtiny.
 import { createClient } from '@supabase/supabase-js';
+import { voterKey } from './util.js';
 
 export function createSupabaseApi(url, key) {
   const sb = createClient(url, key, { auth: { flowType: 'implicit', persistSession: true, detectSessionInUrl: true } });
@@ -75,11 +76,12 @@ export function createSupabaseApi(url, key) {
     async pollResults(pollId) {
       const [rows, mine] = await Promise.all([
         one(sb.from('poll_results').select('option_id,votes').eq('poll_id', pollId)),
-        one(sb.from('poll_votes').select('option_id').eq('poll_id', pollId).maybeSingle())
+        one(sb.rpc('my_vote', { p_poll: pollId, p_key: voterKey() }))
       ]);
-      return { votes: Object.fromEntries(rows.map((r) => [r.option_id, r.votes])), mine: mine?.option_id ?? null };
+      return { votes: Object.fromEntries(rows.map((r) => [r.option_id, r.votes])), mine: mine ?? null };
     },
-    async vote(optionId) { fail((await sb.rpc('vote', { p_option: optionId })).error); },
+    // hlasovat jde i bez přihlášení; nepřihlášeného pozná databáze podle klíče prohlížeče
+    async vote(optionId) { fail((await sb.rpc('vote_any', { p_option: optionId, p_key: voterKey() })).error); },
 
     async savePost(d) {
       const row = {

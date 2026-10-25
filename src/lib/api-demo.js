@@ -105,12 +105,11 @@ export function createDemoApi() {
     },
     async pollResults(pollId) {
       const poll = polls.find((x) => x.id === pollId);
-      return wait({ votes: Object.fromEntries(poll.options.map((o) => [o.id, votes[o.id] || 0])), mine: myVotes[`${current}:${pollId}`] ?? null });
+      return wait({ votes: Object.fromEntries(poll.options.map((o) => [o.id, votes[o.id] || 0])), mine: myVotes[`${current || 'anon'}:${pollId}`] ?? null });
     },
     async vote(optionId) {
-      need(current, 'Pro hlasování se přihlaste.');
       const poll = polls.find((x) => x.options.some((o) => o.id === optionId));
-      const key = `${current}:${poll.id}`;
+      const key = `${current || 'anon'}:${poll.id}`;
       if (myVotes[key]) votes[myVotes[key]]--;
       myVotes[key] = optionId; votes[optionId] = (votes[optionId] || 0) + 1;
     },

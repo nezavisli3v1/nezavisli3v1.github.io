@@ -14,6 +14,16 @@ export function date(iso) {
   return fmt.format(d);
 }
 
+// Náhodný klíč prohlížeče pro hlasování bez přihlášení (jeden prohlížeč = jeden hlas v anketě).
+let memKey = null;
+export function voterKey() {
+  try {
+    let k = localStorage.getItem('nezavisli3v1-hlasovani');
+    if (!k) { k = crypto.randomUUID(); localStorage.setItem('nezavisli3v1-hlasovani', k); }
+    return k;
+  } catch { return (memKey ??= crypto.randomUUID()); }
+}
+
 export function plural(n, one, few, many) { return `${n} ${n === 1 ? one : n >= 2 && n <= 4 ? few : many}`; }
 
 export function clean(html) {

@@ -12,8 +12,8 @@ S proměnnou `PUBLIC_DEMO=1` se web spustí v **ukázkovém režimu** s vymyšle
 
 | role | může |
 |---|---|
-| nepřihlášený | číst |
-| čtenář | navíc komentovat, odpovídat a hlasovat v anketách |
+| nepřihlášený | číst a hlasovat v anketách (jeden hlas na prohlížeč) |
+| čtenář | navíc komentovat a odpovídat; hlasuje svým účtem |
 | autor | navíc psát a zveřejňovat, moderovat komentáře, uzavírat diskuse, měnit stavy slibů |
 | správce | navíc přidělovat role a mazat příspěvky |
 
@@ -35,7 +35,7 @@ Počítejte zhruba s hodinou. Pořadí je důležité.
 ### 2. Supabase
 
 1. Na supabase.com založte projekt. **Region: Central EU (Frankfurt).** Heslo k databázi si uložte, aplikace ho nepotřebuje.
-2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql`, `005_mazani_komentaru.sql`, `006_uprava_komentaru.sql`, `007_pocitadlo.sql` a `008_uzemni_plan.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
+2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql`, `005_mazani_komentaru.sql`, `006_uprava_komentaru.sql`, `007_pocitadlo.sql`, `008_uzemni_plan.sql` a `009_anonymni_hlasovani.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
 3. **Authentication → URL Configuration:**
    - Site URL: `https://nezavisli3v1.cz`
    - Redirect URLs: `https://nezavisli3v1.cz/**` a `https://nezavisli3v1.github.io/**`
