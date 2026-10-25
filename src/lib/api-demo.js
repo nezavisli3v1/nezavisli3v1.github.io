@@ -183,7 +183,7 @@ export function createDemoApi() {
       p.status = status; p.log.unshift({ id: ++seq, status, note: note.trim() || 'Stav vrácen na „nezahájeno“.', author_id: current, created_at: now() });
     },
 
-    async listSections() { return wait(sections.slice().sort((a, b) => a.position - b.position)); },
+    async listSections(page) { return wait(sections.filter((x) => x.page === page).sort((a, b) => a.position - b.position)); },
     async saveSection(page, d) {
       need(isAuthor(), 'K této akci nemáte oprávnění.');
       let s = sections.find((x) => x.id === d.id);

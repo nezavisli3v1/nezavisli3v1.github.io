@@ -35,6 +35,7 @@
     { href: '/', label: 'Aktuality', on: path === '/' || path.startsWith('/clanek') },
     { href: '/diskuse/', label: 'Diskuse', on: path.startsWith('/diskuse') },
     { href: '/uzemni-plan/', label: 'Územní plán', on: path.startsWith('/uzemni-plan') },
+    { href: '/dopravni-znaceni/', label: 'Dopravní značení', on: path.startsWith('/dopravni-znaceni') },
     { href: '/sliby/', label: 'Hlídač slibů', on: path.startsWith('/sliby') },
     ...(isAuthor() ? [{ href: '/autor/', label: 'Psaní', on: path.startsWith('/autor') && !path.startsWith('/autor/lide') && !path.startsWith('/autor/statistiky') }] : []),
     ...(isAdmin() ? [{ href: '/autor/statistiky/', label: 'Statistiky', on: path.startsWith('/autor/statistiky') }] : []),
@@ -102,4 +103,6 @@
   footer .wrap { padding-block: 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 4px; }
   .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 14px; z-index: 20; box-shadow: 0 6px 20px rgba(0,0,0,.2); max-width: calc(100% - 32px); }
   @media (max-width: 520px) { .tabs a { padding: 11px 9px 9px; font-size: 13.5px; } }
+  /* na mobilu naznačit, že záložky pokračují doprava */
+  @media (max-width: 720px) { .tabs .wrap { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); padding-right: 36px; } }
 </style>

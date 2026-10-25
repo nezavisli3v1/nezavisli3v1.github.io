@@ -1,4 +1,4 @@
--- PRVNÍ SPUŠTĚNÍ: všechny migrace najednou (001–009).
+-- PRVNÍ SPUŠTĚNÍ: všechny migrace najednou (001–010).
 -- Spustit jen jednou, na prázdném projektu. Supabase → SQL Editor → vložit celé → Run.
 
 
@@ -679,7 +679,6 @@ create policy pages_files_delete on storage.objects for delete using (bucket_id 
 grant select on public.page_sections, public.section_files to anon, authenticated;
 grant insert, update, delete on public.page_sections, public.section_files to authenticated;
 
-
 -- ════════ supabase/migrations/009_anonymni_hlasovani.sql ════════
 -- Hlasování v anketách i bez přihlášení.
 -- Nepřihlášený návštěvník hlasuje náhodným klíčem, který si pamatuje jeho prohlížeč:
@@ -762,3 +761,12 @@ revoke all on function public.my_vote(bigint, uuid) from public;
 grant execute on function public.vote_any(bigint, uuid) to anon, authenticated;
 grant execute on function public.my_vote(bigint, uuid) to anon, authenticated;
 grant select on public.poll_results to anon, authenticated;
+
+-- ════════ supabase/migrations/010_dopravni_znaceni.sql ════════
+-- Další stálá stránka: Pasport a projekt svislého dopravního značení a dopravního zařízení.
+-- Používá stejné tabulky jako Územní plán, jen povolí nový název stránky.
+-- Spustit v Supabase SQL Editoru jednou (po 001–009).
+
+alter table public.page_sections drop constraint if exists page_sections_page_check;
+alter table public.page_sections add constraint page_sections_page_check
+  check (page in ('uzemni-plan', 'dopravni-znaceni'));
