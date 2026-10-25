@@ -1,14 +1,14 @@
 <script>
   import { page } from '$app/state';
   import { api } from '$lib/api.js';
-  import { session, isAuthor, isAdmin, toast } from '$lib/state.svelte.js';
+  import { session, isAuthor, isAdmin, toast, nav } from '$lib/state.svelte.js';
   import { date, clean, fileSize, isLive, isScheduled, when } from '$lib/util.js';
   import Poll from '$lib/components/Poll.svelte';
   import Comments from '$lib/components/Comments.svelte';
 
   const id = $derived(+page.url.searchParams.get('id'));
   let post = $state(undefined), closing = $state(false), summary = $state('');
-  const load = () => api.getPost(id).then((p) => (post = p));
+  const load = () => api.getPost(id).then((p) => { post = p; nav.postKind = p?.kind ?? null; });
   $effect(() => { session.profile; id; load(); });
   const cover = $derived(post && api.coverUrl(post.cover_path));
   let views = $state(null);

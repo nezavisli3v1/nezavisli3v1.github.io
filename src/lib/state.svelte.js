@@ -22,3 +22,6 @@ export function toast(text) {
   toastState.text = text; const id = ++toastState.id;
   setTimeout(() => { if (toastState.id === id) toastState.text = ''; }, 3200);
 }
+
+// druh právě otevřeného příspěvku, aby lišta zvýraznila správnou záložku
+export const nav = $state({ postKind: null });

@@ -8,7 +8,7 @@
   import '../app.css';
   import { page } from '$app/state';
   import { api } from '$lib/api.js';
-  import { session, toastState, startSession, isAuthor, isAdmin } from '$lib/state.svelte.js';
+  import { session, toastState, startSession, isAuthor, isAdmin, nav } from '$lib/state.svelte.js';
 
   let { children } = $props();
   startSession();
@@ -32,8 +32,8 @@
   });
   const path = $derived(page.url.pathname);
   const tabs = $derived([
-    { href: '/', label: 'Aktuality', on: path === '/' || path.startsWith('/clanek') },
-    { href: '/diskuse/', label: 'Diskuse', on: path.startsWith('/diskuse') },
+    { href: '/', label: 'Aktuality', on: path === '/' || (path.startsWith('/clanek') && nav.postKind !== 'question') },
+    { href: '/diskuse/', label: 'Diskuse', on: path.startsWith('/diskuse') || (path.startsWith('/clanek') && nav.postKind === 'question') },
     { href: '/uzemni-plan/', label: 'Územní plán', on: path.startsWith('/uzemni-plan') },
     { href: '/dopravni-znaceni/', label: 'Dopravní značení', on: path.startsWith('/dopravni-znaceni') },
     { href: '/sliby/', label: 'Hlídač slibů', on: path.startsWith('/sliby') },
