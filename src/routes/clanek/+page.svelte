@@ -23,6 +23,12 @@
     try { await api.closeDiscussion(post.id, summary); closing = false; await load(); toast('Diskuse je uzavřená a shrnutí zveřejněné.'); }
     catch (err) { toast(err.message); }
   }
+  async function togglePin() {
+    try {
+      await api.setPinned(post.id, !post.pinned_at); await load();
+      toast(post.pinned_at ? `Připnuto. Příspěvek zůstane první v ${post.kind === 'question' ? 'Diskusi' : 'Aktualitách'}, dokud ho neodepnete.` : 'Odepnuto. Příspěvek se vrátil na své místo podle data.');
+    } catch (e) { toast(e.message.includes('set_pinned') ? 'Připínání ještě není zapnuté. Je potřeba spustit SQL 011.' : e.message); }
+  }
   async function copyLink() {
     try { await navigator.clipboard.writeText(location.href); toast('Odkaz zkopírován. Vložte ho na Facebook nebo do zprávy.'); }
     catch { toast(location.href); }
@@ -64,6 +70,7 @@
     <button class="btn ghost" onclick={copyLink}>Zkopírovat odkaz</button>
     {#if isAuthor()}
       <a class="btn ghost" href={`/autor/psat/?id=${post.id}`}>Upravit</a>
+      {#if isLive(post)}<button class="btn ghost" onclick={togglePin}>{post.pinned_at ? 'Odepnout' : '📌 Připnout nahoru'}</button>{/if}
       {#if isLive(post) && !post.closed_at && post.comments_enabled}
         <button class="btn ghost" onclick={() => (closing = !closing)}>Uzavřít diskusi</button>
       {/if}

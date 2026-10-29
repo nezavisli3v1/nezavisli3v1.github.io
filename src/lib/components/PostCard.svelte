@@ -12,6 +12,7 @@
   {#if post.perex}<p>{post.perex}</p>{/if}
   <span class="foot">
     <span class="meta">{post.author?.display_name} · {post.status === 'draft' ? 'upraveno ' + date(post.updated_at) : isScheduled(post) ? 'vyjde ' + when(post.published_at) : date(post.published_at)}</span>
+    {#if post.pinned_at}<span class="badge">📌 Připnuto</span>{/if}
     {#if post.status === 'draft'}<span class="badge warn">koncept</span>{/if}
     {#if isScheduled(post)}<span class="badge blue">naplánováno</span>{/if}
     {#if post.status === 'published' && !isScheduled(post)}<span class="chip">{plural(post.comment_count, 'komentář', 'komentáře', 'komentářů')}</span>{/if}

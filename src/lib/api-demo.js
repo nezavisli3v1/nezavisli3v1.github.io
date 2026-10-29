@@ -1,6 +1,7 @@
 // Ukázkový režim: běží bez databáze, s vymyšleným obsahem v paměti prohlížeče.
 // Spouští se automaticky, když chybí PUBLIC_SUPABASE_URL. Hodí se k ukázce kolegům a k vývoji.
 import { DEMO_CHAPTERS } from './demo-program.js';
+import { pinnedFirst } from './util.js';
 
 const wait = (v) => new Promise((r) => setTimeout(() => r(structuredClone(v)), 120));
 const now = () => new Date().toISOString();
@@ -95,7 +96,7 @@ export function createDemoApi() {
       const live = (p) => p.status === 'published' && p.published_at && p.published_at <= now();
       const list = posts.filter((p) => (!kind || p.kind === kind) && (live(p) || (drafts && isAuthor())))
         .sort((a, b) => (b.published_at || '9').localeCompare(a.published_at || '9'));
-      return wait(list.map((p) => ({ ...p, author: pub(p.author_id), comment_count: comments.filter((c) => c.post_id === p.id).length, has_poll: polls.some((x) => x.post_id === p.id) })));
+      return wait(pinnedFirst(list).map((p) => ({ ...p, author: pub(p.author_id), comment_count: comments.filter((c) => c.post_id === p.id).length, has_poll: polls.some((x) => x.post_id === p.id) })));
     },
     async getPost(id) {
       const p = posts.find((x) => x.id === +id && ((x.status === 'published' && x.published_at <= now()) || isAuthor()));
@@ -134,6 +135,7 @@ export function createDemoApi() {
       return p.id;
     },
     async deletePost(id) { need(me()?.role === 'admin', 'Mazat může jen správce.'); posts.splice(posts.findIndex((x) => x.id === id), 1); },
+    async setPinned(id, pinned) { need(isAuthor(), 'Připínat mohou jen autoři.'); posts.find((x) => x.id === id).pinned_at = pinned ? now() : null; },
     async closeDiscussion(id, summary) {
       need(isAuthor(), 'Jen autoři mohou uzavřít diskusi.'); need(summary.trim().length >= 10, 'Napište shrnutí, co z diskuse vzešlo.');
       Object.assign(posts.find((x) => x.id === id), { closed_at: now(), closing_summary: summary.trim() });

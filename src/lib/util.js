@@ -57,3 +57,9 @@ export function localInput(d) {
   const z = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`;
 }
+
+// připnuté příspěvky první (nejnověji připnuté nahoře), ostatní ve stávajícím pořadí
+export function pinnedFirst(list) {
+  const pinned = list.filter((p) => p.pinned_at).sort((a, b) => b.pinned_at.localeCompare(a.pinned_at));
+  return [...pinned, ...list.filter((p) => !p.pinned_at)];
+}

@@ -1,6 +1,7 @@
 // Přístup k datům přes Supabase. Oprávnění hlídá databáze (viz supabase/migrations),
 // tady se jen skládají dotazy a překládají chyby do češtiny.
 import { createClient } from '@supabase/supabase-js';
+import { pinnedFirst } from './util.js';
 import { voterKey } from './util.js';
 
 export function createSupabaseApi(url, key) {
@@ -44,13 +45,20 @@ export function createSupabaseApi(url, key) {
 
     // ── příspěvky
     async listPosts({ kind, drafts = false } = {}) {
-      let q = sb.from('posts')
-        .select('id,kind,title,perex,category,cover_path,status,published_at,created_at,updated_at,comments_enabled,closed_at,author_id')
-        .order('published_at', { ascending: false, nullsFirst: true })
-        .order('created_at', { ascending: false });
-      if (kind) q = q.eq('kind', kind);
-      if (!drafts) q = q.eq('status', 'published').lte('published_at', new Date().toISOString());
-      const posts = await one(q);
+      const COLS = 'id,kind,title,perex,category,cover_path,status,published_at,created_at,updated_at,comments_enabled,closed_at,author_id';
+      const query = (cols) => {
+        let q = sb.from('posts').select(cols)
+          .order('published_at', { ascending: false, nullsFirst: true })
+          .order('created_at', { ascending: false });
+        if (kind) q = q.eq('kind', kind);
+        if (!drafts) q = q.eq('status', 'published').lte('published_at', new Date().toISOString());
+        return q;
+      };
+      // pinned_at přibyl migrací 011; bez ní web funguje dál, jen bez připnutí
+      let res = await query(COLS + ',pinned_at');
+      if (res.error) res = await query(COLS);
+      fail(res.error);
+      const posts = pinnedFirst(res.data);
       const ids = posts.map((p) => p.id);
       const [authors, counts, polls] = await Promise.all([
         people(posts.map((p) => p.author_id)),
@@ -131,6 +139,7 @@ export function createSupabaseApi(url, key) {
       if (post?.cover_path) await sb.storage.from('covers').remove([post.cover_path]);
       if (atts.length) await sb.storage.from('attachments').remove(atts.map((a) => a.path));
     },
+    async setPinned(id, pinned) { fail((await sb.rpc('set_pinned', { p_post: id, p_pinned: pinned })).error); },
     async closeDiscussion(id, summary) { fail((await sb.rpc('close_discussion', { p_post: id, p_summary: summary })).error); },
 
     async uploadCover(file) {
