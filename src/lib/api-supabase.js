@@ -37,8 +37,18 @@ export function createSupabaseApi(url, key) {
     },
     async signOut() { await sb.auth.signOut(); },
     async me(user) {
-      const p = await one(sb.from('profiles').select('id,display_name,role,badge').eq('id', user.id).maybeSingle());
+      // notify_* přibyly migrací 012; bez ní funguje i dřívější výběr
+      let r = await sb.from('profiles').select('id,display_name,role,badge,notify_articles,notify_discussions').eq('id', user.id).maybeSingle();
+      if (r.error) r = await sb.from('profiles').select('id,display_name,role,badge').eq('id', user.id).maybeSingle();
+      fail(r.error);
+      const p = r.data;
       return p && { ...p, email: user.email };
+    },
+    async setMyNotifications(articles, discussions) {
+      fail((await sb.rpc('set_my_notifications', { p_articles: articles, p_discussions: discussions })).error);
+    },
+    async unsubscribe(token, kind) {
+      const { data, error } = await sb.rpc('unsubscribe', { p_token: token, p_kind: kind }); fail(error); return data;
     },
     async setMyName(name) { fail((await sb.rpc('set_my_name', { p_name: name })).error); },
     async deleteMyAccount() { fail((await sb.rpc('delete_my_account')).error); await sb.auth.signOut(); },
@@ -98,12 +108,18 @@ export function createSupabaseApi(url, key) {
       };
       // publish_at: undefined = datum vydání neměnit, null = teď (nebo smazat u konceptu), ISO = naplánovat
       if (d.publish_at !== undefined) row.published_at = d.publish_at;
+      if (typeof d.notify === 'boolean') row.notify = d.notify;
       let id = d.id;
-      if (id) fail((await sb.from('posts').update(row).eq('id', id)).error);
-      else {
+      const write = async (r) => {
+        if (id) return (await sb.from('posts').update(r).eq('id', id)).error;
         const { data: u } = await sb.auth.getUser();
-        id = (await one(sb.from('posts').insert({ ...row, author_id: u.user.id }).select('id').single())).id;
-      }
+        const res = await sb.from('posts').insert({ ...r, author_id: u.user.id }).select('id').single();
+        if (!res.error) id = res.data.id;
+        return res.error;
+      };
+      let err = await write(row);
+      if (err && /notify/.test(err.message)) { delete row.notify; err = await write(row); } // před migrací 012
+      fail(err);
       if (d.attachments) {
         const existing = await one(sb.from('attachments').select('id,path').eq('post_id', id));
         const keep = new Set(d.attachments.filter((a) => a.id).map((a) => a.id));

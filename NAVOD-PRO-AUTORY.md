@@ -23,6 +23,9 @@ Tlačítko Zveřejnit je šedé, dokud něco chybí. Co chybí, je napsané vedl
 ## Připnutí nahoru
 Důležitý článek nebo otázku můžete nechat první v Aktualitách (nebo v Diskusi): otevřete příspěvek a klepněte na **📌 Připnout nahoru**. Zůstane nahoře se štítkem „Připnuto“, dokud ho stejným tlačítkem neodepnete. Připnutých může být víc, nejnověji připnutý je první.
 
+## E-mail odběratelům
+Čtenáři si v Můj účet můžou zapnout odběr nových článků a nových diskusí. Když příspěvek zveřejníte (nebo nastane čas naplánovaného), do pár minut jim přijde e-mail s nadpisem, perexem a odkazem. V editoru je u kroku „Diskuse, anketa a upozornění“ zaškrtávátko **Poslat e-mail odběratelům**; drobnost nebo opravu můžete poslat bez e-mailu. E-mail jde ke každému příspěvku jen jednou, ani úprava ho znovu nepošle. Pozor: stažením mezi koncepty a novým zveřejněním se už nepošle.
+
 ## Uzavření diskuse
 Když diskuse doběhne, otevřete příspěvek a klepněte na **Uzavřít diskusi**. Napište, co z ní vzešlo a co s tím uděláte. Shrnutí se zobrazí nad komentáři.
 

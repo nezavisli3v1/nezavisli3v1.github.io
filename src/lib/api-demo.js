@@ -15,7 +15,7 @@ export function createDemoApi() {
     marie: { id: 'marie', display_name: 'Marie Šímová', role: 'author', badge: null, email: 'marie@example.cz' },
     petra: { id: 'petra', display_name: 'Petra K.', role: 'reader', badge: null, email: 'petra@example.cz' },
     tomas: { id: 'tomas', display_name: 'Tomáš V.', role: 'reader', badge: null, email: 'tomas@example.cz' },
-    host: { id: 'host', display_name: 'Host ukázky', role: 'reader', badge: null, email: 'host@example.cz' }
+    host: { id: 'host', display_name: 'Host ukázky', role: 'reader', badge: null, email: 'host@example.cz', notify_articles: false, notify_discussions: false }
   };
   const pub = (id) => { const p = people[id]; return p && { id: p.id, display_name: p.display_name, is_team: p.role !== 'reader', badge: p.badge }; };
 
@@ -89,6 +89,8 @@ export function createDemoApi() {
     async signIn() { current = 'host'; emit(); },
     async signOut() { current = null; emit(); },
     async me() { return wait(me()); },
+    async setMyNotifications(a, d) { need(me(), 'Nejste přihlášeni.'); Object.assign(me(), { notify_articles: a, notify_discussions: d }); },
+    async unsubscribe() { return 'Host ukázky'; },
     async setMyName(name) { need(me(), 'Nejste přihlášeni.'); me().display_name = name.trim(); emit(); },
     async deleteMyAccount() { need(!isAuthor(), 'Účet autora může smazat jen správce.'); current = null; emit(); },
 
@@ -119,7 +121,7 @@ export function createDemoApi() {
       let p = posts.find((x) => x.id === d.id);
       if (!p) { p = { id: ++seq, author_id: current, created_at: now(), closed_at: null, closing_summary: null }; posts.push(p); }
       Object.assign(p, { kind: d.kind, title: d.title.trim(), perex: d.perex.trim(), body_html: d.body_html, category: d.category,
-        cover_path: d.cover_path || null, status: d.status, comments_enabled: d.comments_enabled, updated_at: now() });
+        cover_path: d.cover_path || null, status: d.status, comments_enabled: d.comments_enabled, notify: d.notify, updated_at: now() });
       if (d.publish_at !== undefined) p.published_at = d.publish_at;
       if (p.status === 'draft') p.published_at = null;
       if (p.status === 'published' && !p.published_at) p.published_at = now();

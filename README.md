@@ -35,7 +35,8 @@ Počítejte zhruba s hodinou. Pořadí je důležité.
 ### 2. Supabase
 
 1. Na supabase.com založte projekt. **Region: Central EU (Frankfurt).** Heslo k databázi si uložte, aplikace ho nepotřebuje.
-2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql`, `005_mazani_komentaru.sql`, `006_uprava_komentaru.sql`, `007_pocitadlo.sql`, `008_uzemni_plan.sql`, `009_anonymni_hlasovani.sql`, `010_dopravni_znaceni.sql` a `011_pripnuti.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
+2. **SQL Editor:** vložte celý `supabase/migrations/001_zaklad.sql` a spusťte. Pak totéž s `002_program.sql`, `003_prilohy.sql`, `004_planovani.sql`, `005_mazani_komentaru.sql`, `006_uprava_komentaru.sql`, `007_pocitadlo.sql`, `008_uzemni_plan.sql`, `009_anonymni_hlasovani.sql`, `010_dopravni_znaceni.sql`, `011_pripnuti.sql` a `012_odber_emailem.sql` (nebo vše najednou: `supabase/prvni-spusteni.sql`). Předtím zkontrolujte, že body programu v něm sedí se zveřejněným programem.
+3. **Odběr e-mailem:** v Brevu vytvořte API klíč (Settings → SMTP & API → API Keys) a v SQL Editoru ho uložte do trezoru: `select vault.create_secret('KLÍČ', 'brevo_api_key');`. Klíč nikam jinam nekopírujte. Bez klíče se e-maily prostě neposílají. Co se rozeslalo, ukáže `select * from notification_log order by id desc;`.
 3. **Authentication → URL Configuration:**
    - Site URL: `https://nezavisli3v1.cz`
    - Redirect URLs: `https://nezavisli3v1.cz/**` a `https://nezavisli3v1.github.io/**`
@@ -95,7 +96,7 @@ Každý commit do větve `main` se sám zveřejní.
 | `src/lib/api-demo.js` | ukázkový režim |
 | `supabase/migrations/` | databáze a pravidla přístupu |
 
-Změny databáze přidávejte jako nový soubor `supabase/migrations/012_…sql`, nikdy nepřepisujte staré.
+Změny databáze přidávejte jako nový soubor `supabase/migrations/013_…sql`, nikdy nepřepisujte staré.
 
 ## Připravuje se
 

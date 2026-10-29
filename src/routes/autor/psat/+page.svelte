@@ -16,14 +16,14 @@
     loaded = true;
     if (!editId) {
       d = { kind: page.url.searchParams.get('druh') === 'question' ? 'question' : 'article', title: '', perex: '', body_html: '',
-        category: CATEGORIES[0], cover_path: null, comments_enabled: true, status: 'draft', addPoll: false, attachments: [],
+        category: CATEGORIES[0], cover_path: null, comments_enabled: true, status: 'draft', addPoll: false, attachments: [], notify: true,
         poll: { question: '', options: ['', ''] } };
       return;
     }
     api.getPost(editId).then((p) => {
       if (!p) { d = false; return; }
       hadPoll = !!p.poll;
-      d = { ...p, attachments: p.attachments || [], addPoll: !!p.poll, poll: p.poll ? { question: p.poll.question, options: p.poll.options.map((o) => o.label) } : { question: '', options: ['', ''] } };
+      d = { ...p, notify: p.notify ?? true, attachments: p.attachments || [], addPoll: !!p.poll, poll: p.poll ? { question: p.poll.question, options: p.poll.options.map((o) => o.label) } : { question: '', options: ['', ''] } };
     });
   });
 
@@ -169,8 +169,11 @@
     </div>
 
     <div class="step">
-      <span class="l"><i>{editId ? 4 : 5}</i>Diskuse a anketa</span>
+      <span class="l"><i>{editId ? 4 : 5}</i>Diskuse, anketa a upozornění</span>
       <label class="check"><input type="checkbox" bind:checked={d.comments_enabled}><span>Povolit komentáře<small>Doporučujeme vždy. Moderovat můžete i potom.</small></span></label>
+      {#if !d.notified_at}
+        <label class="check"><input type="checkbox" bind:checked={d.notify}><span>Poslat e-mail odběratelům<small>Při zveřejnění (u naplánovaného v čas vydání) dostanou e-mail ti, kdo si odběr zapnuli.</small></span></label>
+      {:else}<p class="meta">E-mail odběratelům už byl k tomuto příspěvku odeslán.</p>{/if}
       {#if pollEditable || !hadPoll}
         <label class="check"><input type="checkbox" bind:checked={d.addPoll}><span>Přidat anketu<small>Po zveřejnění už ji nejde měnit, aby se nepřepsaly hlasy.</small></span></label>
         {#if d.addPoll}

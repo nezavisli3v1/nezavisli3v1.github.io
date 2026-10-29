@@ -9,6 +9,12 @@
   const ROLE = { reader: 'čtenář', author: 'autor', admin: 'správce' };
 
   async function save(e) { e.preventDefault(); try { await api.setMyName(name); await refreshProfile(); toast('Jméno uloženo.'); } catch (err) { toast(err.message); } }
+  const hasNotify = $derived(session.profile && 'notify_articles' in session.profile);
+  async function setNotify(field, value) {
+    const a = field === 'a' ? value : !!session.profile.notify_articles, d = field === 'd' ? value : !!session.profile.notify_discussions;
+    try { await api.setMyNotifications(a, d); await refreshProfile(); toast(value ? 'Odběr zapnut. Nové příspěvky vám přijdou e-mailem.' : 'Odběr vypnut.'); }
+    catch (err) { toast(err.message); }
+  }
   async function out() { await api.signOut(); goto('/'); }
   async function del() { try { await api.deleteMyAccount(); toast('Účet i vaše komentáře jsou smazané.'); goto('/'); } catch (err) { toast(err.message); } }
 </script>
@@ -24,6 +30,15 @@
     <input id="nm" class="field" bind:value={name} required minlength="2" maxlength="60">
     <button class="btn">Uložit</button>
   </form>
+  {#if hasNotify}
+    <div class="box">
+      <b>Odběr e-mailem</b>
+      <p class="meta">Pošleme vám e-mail, když na webu vyjde něco nového. Odhlásit se můžete tady nebo odkazem v každém e-mailu.</p>
+      <label class="check"><input type="checkbox" checked={session.profile.notify_articles} onchange={(e) => setNotify('a', e.target.checked)}><span>Nové články v Aktualitách</span></label>
+      <label class="check"><input type="checkbox" checked={session.profile.notify_discussions} onchange={(e) => setNotify('d', e.target.checked)}><span>Nové otázky v Diskusi</span></label>
+      <p class="meta">E-maily chodí na {session.profile.email}.</p>
+    </div>
+  {/if}
   <button class="btn ghost" onclick={out}>Odhlásit se</button>
   {#if session.profile.role === 'reader'}
     <div class="box">
