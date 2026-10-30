@@ -39,7 +39,7 @@
   const missing = $derived(!d ? [] : pic ? [!d.cover_path && 'obrázek'].filter(Boolean) : [
     d.title.trim().length < 3 && 'nadpis',
     !d.perex.trim() && 'shrnutí',
-    d.kind === 'article' && textLength(d.body_html) < 20 && 'text',
+    d.kind === 'article' && textLength(d.body_html) < 1 && 'text článku (krok 3)',
     d.addPoll && pollEditable && (!d.poll.question.trim() || d.poll.options.filter((o) => o.trim()).length < 2) && 'otázka a aspoň dvě možnosti ankety'
   ].filter(Boolean));
 
