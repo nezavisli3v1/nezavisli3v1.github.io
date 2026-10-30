@@ -15,7 +15,7 @@
     if (!session.ready || !isAuthor() || loaded) return;
     loaded = true;
     if (!editId) {
-      d = { kind: page.url.searchParams.get('druh') === 'question' ? 'question' : 'article', title: '', perex: '', body_html: '',
+      d = { kind: ['question', 'picture'].includes(page.url.searchParams.get('druh')) ? page.url.searchParams.get('druh') : 'article', title: '', perex: '', body_html: '',
         category: CATEGORIES[0], cover_path: null, comments_enabled: true, status: 'draft', addPoll: false, attachments: [], notify: true,
         poll: { question: '', options: ['', ''] } };
       return;
@@ -35,7 +35,8 @@
     const t = d.published_at && scheduled ? new Date(d.published_at) : (() => { const x = new Date(Date.now() + 864e5); x.setHours(8, 0, 0, 0); return x; })();
     planAt = localInput(t); planning = true;
   }
-  const missing = $derived(!d ? [] : [
+  const pic = $derived(d && d.kind === 'picture');
+  const missing = $derived(!d ? [] : pic ? [!d.cover_path && 'obrázek'].filter(Boolean) : [
     d.title.trim().length < 3 && 'nadpis',
     !d.perex.trim() && 'shrnutí',
     d.kind === 'article' && textLength(d.body_html) < 20 && 'text',
@@ -43,10 +44,11 @@
   ].filter(Boolean));
 
   // fotky z telefonu bývají obří; před nahráním je zmenšíme
+  // obrázek (kreslený vtip) bývá s drobným písmem, proto větší rozměr
   async function shrink(file) {
     if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
     const img = await createImageBitmap(file);
-    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const scale = Math.min(1, (pic ? 2400 : 1600) / Math.max(img.width, img.height));
     if (scale === 1 && file.size < 600_000) return file;
     const c = Object.assign(document.createElement('canvas'), { width: Math.round(img.width * scale), height: Math.round(img.height * scale) });
     c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
@@ -101,7 +103,7 @@
 {:else if d === false}<p class="empty">Příspěvek nebyl nalezen.</p>
 {:else if d}
   <div class="section-head"><div>
-    <h1>{editId ? 'Úprava' : d.kind === 'question' ? 'Nová otázka' : 'Nový článek'}</h1>
+    <h1>{editId ? 'Úprava' : { question: 'Nová otázka', picture: 'Nový obrázek' }[d.kind] || 'Nový článek'}</h1>
     <p class="lede">{live ? 'Příspěvek už je zveřejněný. Změny se projeví hned po uložení.'
       : scheduled ? `Naplánováno na ${when(d.published_at)}. Do té doby ho vidí jen autoři.`
       : 'Rozepsaný text můžete kdykoli uložit jako koncept a dokončit později, nebo naplánovat na konkrétní čas.'}</p>
@@ -113,8 +115,30 @@
         <div class="row">
           <label class="check"><input type="radio" bind:group={d.kind} value="article"><span>Napsat článek<small>Zpráva, shrnutí, vysvětlení</small></span></label>
           <label class="check"><input type="radio" bind:group={d.kind} value="question"><span>Položit otázku<small>Rozjet diskusi k jednomu tématu</small></span></label>
+          <label class="check"><input type="radio" bind:group={d.kind} value="picture"><span>Vložit obrázek<small>Kreslený vtip nebo fotka, bez článku</small></span></label>
         </div></div>
     {/if}
+
+    {#if pic}
+    <div class="step">
+      <span class="l"><i>{editId ? 1 : 2}</i>Obrázek</span>
+      <div class="photo">
+        {#if d.cover_path}<img class="full" src={api.coverUrl(d.cover_path)} alt="Náhled obrázku">{/if}
+        <div class="row">
+          <label class="btn {d.cover_path ? 'ghost' : ''}">{uploading ? 'Nahrávám…' : d.cover_path ? 'Vyměnit obrázek' : 'Vybrat obrázek'}<input type="file" accept="image/*" onchange={pickPhoto} hidden disabled={uploading}></label>
+        </div>
+        <p class="hint">Obrázek se ukáže celý, nic se neořízne. Používejte jen vlastní obrázky, nebo takové, kde máte svolení autora. Obrázek vytvořený umělou inteligencí označte v textu.</p>
+      </div>
+
+      <label class="l sub" for="w-title">Nadpis (nepovinný)</label>
+      <input id="w-title" class="field" bind:value={d.title} maxlength="120" placeholder="Například: Doprava v Mokrém očima Pepy">
+      <div class="count">{d.title.length} / 120</div>
+
+      <label class="l sub" for="w-perex">Text pod obrázkem (nepovinný)</label>
+      <textarea id="w-perex" class="field" rows="2" bind:value={d.perex} maxlength="300"></textarea>
+      <div class="count">{d.perex.length} / 300</div>
+    </div>
+    {:else}
 
     <div class="step">
       <label class="l" for="w-title"><i>{editId ? 1 : 2}</i>Nadpis</label>
@@ -167,9 +191,10 @@
       <label class="btn ghost addpdf">{uploadingPdf ? 'Nahrávám…' : '+ Přidat PDF'}<input type="file" accept="application/pdf,.pdf" multiple onchange={pickPdf} hidden disabled={uploadingPdf}></label>
       <p class="hint warn">Před nahráním zkontrolujte, že dokument neobsahuje jména, adresy, rodná čísla ani jiné osobní údaje soukromých lidí. Pokud ano, začerněte je.</p>
     </div>
+    {/if}
 
     <div class="step">
-      <span class="l"><i>{editId ? 4 : 5}</i>Diskuse, anketa a upozornění</span>
+      <span class="l"><i>{pic ? (editId ? 2 : 3) : editId ? 4 : 5}</i>Diskuse, anketa a upozornění</span>
       <label class="check"><input type="checkbox" bind:checked={d.comments_enabled}><span>Povolit komentáře<small>Doporučujeme vždy. Moderovat můžete i potom.</small></span></label>
       {#if !d.notified_at}
         <label class="check"><input type="checkbox" bind:checked={d.notify}><span>Poslat e-mail odběratelům<small>Při zveřejnění (u naplánovaného v čas vydání) dostanou e-mail ti, kdo si odběr zapnuli.</small></span></label>
@@ -217,7 +242,7 @@
         <button class="btn ghost" disabled={busy || missing.length > 0} onclick={() => save('keep')}>Uložit změny</button>
         <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('now')}>Zveřejnit hned</button>
       {:else}
-        <button class="btn ghost" disabled={busy || d.title.trim().length < 3} onclick={() => save('draft')}>Uložit koncept</button>
+        <button class="btn ghost" disabled={busy || (pic ? !d.cover_path : d.title.trim().length < 3)} onclick={() => save('draft')}>Uložit koncept</button>
         <button class="btn ghost" disabled={busy || missing.length > 0} onclick={openPlan}>Naplánovat…</button>
         <button class="btn" disabled={busy || missing.length > 0} onclick={() => save('now')}>Zveřejnit</button>
       {/if}
@@ -235,6 +260,7 @@
   .count { font-size: 12px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; margin-top: 2px; }
   .photo { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
   .photo img { max-height: 200px; object-fit: cover; border-radius: 6px; width: 100%; }
+  .photo img.full { max-height: 70vh; object-fit: contain; background: var(--bg); }
   .photo .hint { margin: 0; }
   .pollopts { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; align-items: stretch; }
   .pollopts > .btn { align-self: flex-start; }

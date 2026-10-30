@@ -23,6 +23,9 @@ Tlačítko Zveřejnit je šedé, dokud něco chybí. Co chybí, je napsané vedl
 ## Připnutí nahoru
 Důležitý článek nebo otázku můžete nechat první v Aktualitách (nebo v Diskusi): otevřete příspěvek a klepněte na **📌 Připnout nahoru**. Zůstane nahoře se štítkem „Připnuto“, dokud ho stejným tlačítkem neodepnete. Připnutých může být víc, nejnověji připnutý je první.
 
+## Obrázek bez článku
+Kreslený vtip nebo fotku vložíte tlačítkem **Vložit obrázek** v Aktualitách (nebo v editoru volbou „Vložit obrázek“). Povinný je jen obrázek; nadpis a text pod obrázkem jsou nepovinné. Obrázek se ukáže celý, neořízne se. Pod ním můžou lidé komentovat, můžete přidat i anketu. Odběratelům článků přijde e-mail s obrázkem. Cizí vtip vkládejte jen se svolením autora.
+
 ## E-mail odběratelům
 Čtenáři si v Můj účet můžou zapnout odběr nových článků a nových diskusí. Když příspěvek zveřejníte (nebo nastane čas naplánovaného), do pár minut jim přijde e-mail s nadpisem, perexem a odkazem. V editoru je u kroku „Diskuse, anketa a upozornění“ zaškrtávátko **Poslat e-mail odběratelům**; drobnost nebo opravu můžete poslat bez e-mailu. E-mail jde ke každému příspěvku jen jednou, ani úprava ho znovu nepošle. Pozor: stažením mezi koncepty a novým zveřejněním se už nepošle.
 

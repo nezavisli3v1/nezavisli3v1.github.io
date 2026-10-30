@@ -96,7 +96,7 @@ export function createDemoApi() {
 
     async listPosts({ kind, drafts = false } = {}) {
       const live = (p) => p.status === 'published' && p.published_at && p.published_at <= now();
-      const list = posts.filter((p) => (!kind || p.kind === kind) && (live(p) || (drafts && isAuthor())))
+      const list = posts.filter((p) => (!kind || p.kind === kind || (kind === 'article' && p.kind === 'picture')) && (live(p) || (drafts && isAuthor())))
         .sort((a, b) => (b.published_at || '9').localeCompare(a.published_at || '9'));
       return wait(pinnedFirst(list).map((p) => ({ ...p, author: pub(p.author_id), comment_count: comments.filter((c) => c.post_id === p.id).length, has_poll: polls.some((x) => x.post_id === p.id) })));
     },

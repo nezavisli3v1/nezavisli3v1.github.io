@@ -35,21 +35,21 @@
   }
 </script>
 
-<svelte:head><title>{post?.title || 'Článek'} · Nezávislí PRO</title></svelte:head>
+<svelte:head><title>{post?.title || (post?.kind === 'picture' ? 'Obrázek' : 'Článek')} · Nezávislí PRO</title></svelte:head>
 
 {#if post === undefined}<p class="empty">Načítám…</p>
 {:else if post === null}<p class="empty">Tenhle příspěvek neexistuje nebo ještě není zveřejněný. <a href="/">Zpět na aktuality</a></p>
 {:else}
   <a class="linkbtn" href={post.kind === 'question' ? '/diskuse/' : '/'}>← Zpět</a>
   <article>
-    <span class="tag">{post.kind === 'question' ? 'Diskuse · ' : ''}{post.category}</span>
-    <h1>{post.title}</h1>
+    <span class="tag">{post.kind === 'picture' ? 'Obrázek' : (post.kind === 'question' ? 'Diskuse · ' : '') + post.category}</span>
+    {#if post.title}<h1>{post.title}</h1>{/if}
     <div class="meta">{post.author?.display_name}
       {#if post.author?.badge}<span class="badge">{post.author.badge}</span>{/if}
       · {post.status === 'draft' ? 'koncept, vidí jen autoři' : isScheduled(post) ? `naplánováno na ${when(post.published_at)}, zatím vidí jen autoři` : date(post.published_at)}</div>
     {#if views !== null}<div class="views">Zobrazeno {new Intl.NumberFormat('cs-CZ').format(views)}× celkem · vidíte jen vy</div>{/if}
-    {#if cover}<img src={cover} alt="">{/if}
-    {#if post.perex}<p class="perex">{post.perex}</p>{/if}
+    {#if cover}<img src={cover} alt={post.kind === 'picture' ? post.title || post.perex || 'Obrázek' : ''}>{/if}
+    {#if post.perex}<p class="perex" class:caption={post.kind === 'picture'}>{post.perex}</p>{/if}
     <div class="body">{@html clean(post.body_html)}</div>
     {#if post.attachments?.length}
       <section class="atts" aria-label="Přílohy">
@@ -93,6 +93,7 @@
   h1 { font-size: 28px; margin: 6px 0 8px; }
   img { width: 100%; border-radius: 8px; margin: 12px 0 0; }
   .perex { font-size: 18px; font-weight: 500; margin: 14px 0; }
+  .perex.caption { font-size: 16px; font-weight: 400; margin-top: 8px; }
   .body :global(p) { margin: 0 0 12px; max-width: 65ch; }
   .body :global(h3) { font-size: 19px; margin: 20px 0 8px; }
   .body :global(blockquote) { border-left: 3px solid var(--accent); margin: 12px 0; padding-left: 14px; color: var(--muted); }

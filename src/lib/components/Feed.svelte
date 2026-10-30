@@ -23,7 +23,10 @@
 
 <div class="section-head">
   <div><h1>{title}</h1><p class="lede">{lede}</p></div>
-  {#if isAuthor()}<a class="btn" href={`/autor/psat/?druh=${kind || 'article'}`}>{newLabel}</a>{/if}
+  {#if isAuthor()}<div class="row">
+    {#if kind === 'article'}<a class="btn ghost" href="/autor/psat/?druh=picture">Vložit obrázek</a>{/if}
+    <a class="btn" href={`/autor/psat/?druh=${kind || 'article'}`}>{newLabel}</a>
+  </div>{/if}
 </div>
 
 {#if showCta}

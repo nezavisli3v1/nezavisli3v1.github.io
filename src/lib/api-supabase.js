@@ -60,7 +60,8 @@ export function createSupabaseApi(url, key) {
         let q = sb.from('posts').select(cols)
           .order('published_at', { ascending: false, nullsFirst: true })
           .order('created_at', { ascending: false });
-        if (kind) q = q.eq('kind', kind);
+        if (kind === 'article') q = q.in('kind', ['article', 'picture']); // Aktuality: články i obrázky
+        else if (kind) q = q.eq('kind', kind);
         if (!drafts) q = q.eq('status', 'published').lte('published_at', new Date().toISOString());
         return q;
       };
@@ -119,6 +120,7 @@ export function createSupabaseApi(url, key) {
       };
       let err = await write(row);
       if (err && /notify/.test(err.message)) { delete row.notify; err = await write(row); } // před migrací 012
+      if (err && /posts_kind_check|posts_title_check/.test(err.message) && d.kind === 'picture') err = new Error('Obrázky ještě nejsou zapnuté. Je potřeba spustit SQL 013.');
       fail(err);
       if (d.attachments) {
         const existing = await one(sb.from('attachments').select('id,path').eq('post_id', id));

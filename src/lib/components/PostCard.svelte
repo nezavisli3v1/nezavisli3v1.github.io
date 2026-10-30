@@ -3,12 +3,14 @@
   import { date, plural, isScheduled, when } from '$lib/util.js';
   let { post, href = `/clanek/?id=${post.id}` } = $props();
   const cover = $derived(api.coverUrl(post.cover_path));
+  const pic = $derived(post.kind === 'picture');
 </script>
 
-<a class="post" class:q={post.kind === 'question'} {href}>
-  <span class="tag">{post.kind === 'question' ? 'Diskuse · ' : ''}{post.category}</span>
-  {#if cover}<img src={cover} alt="" loading="lazy">{/if}
-  <h2>{post.title}</h2>
+<a class="post" class:q={post.kind === 'question'} class:pic={pic} {href}>
+  <span class="tag">{pic ? 'Obrázek' : (post.kind === 'question' ? 'Diskuse · ' : '') + post.category}</span>
+  {#if pic && post.title}<h2>{post.title}</h2>{/if}
+  {#if cover}<img src={cover} alt={pic ? post.title || post.perex || 'Obrázek' : ''} loading="lazy">{/if}
+  {#if !pic}<h2>{post.title}</h2>{/if}
   {#if post.perex}<p>{post.perex}</p>{/if}
   <span class="foot">
     <span class="meta">{post.author?.display_name} · {post.status === 'draft' ? 'upraveno ' + date(post.updated_at) : isScheduled(post) ? 'vyjde ' + when(post.published_at) : date(post.published_at)}</span>
@@ -28,6 +30,8 @@
   h2 { font-size: 19px; }
   p { margin: 0; color: var(--muted); }
   img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 6px; }
+  .pic img { max-height: none; object-fit: contain; }
+  .pic p { color: var(--fg); }
   .foot { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
   .chip { font-size: 12.5px; font-weight: 600; color: var(--muted); }
 </style>
